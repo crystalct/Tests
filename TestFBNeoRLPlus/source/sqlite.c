@@ -1,7 +1,6 @@
 #include <ps3sqlite/ps3sqlite.h>
 
 
-
 int db_init_cpp(char* cache_path) {
 	int i = 0;
 	i = db_init(cache_path);

@@ -14,8 +14,11 @@
 
 #define DEBUGFONT_TEXTURE_WIDTH				128
 #define DEBUGFONT_TEXTURE_HEIGHT			128
-#define DEBUGFONT_GLYPH_WIDTH				8
-#define DEBUGFONT_GLYPH_HEIGHT				9
+#define DEBUGFONT_GLYPH_WIDTH				17
+#define DEBUGFONT_GLYPH_HEIGHT				22
+#define GLYPH_WIDTH_REL						((float)DEBUGFONT_GLYPH_WIDTH / TTF_UX)
+#define GLYPH_HEIGHT_REL					((float)DEBUGFONT_GLYPH_HEIGHT / TTF_UY)
+#define DELTA_GLYPH_WIDTH					DEBUGFONT_GLYPH_WIDTH
 
 #define DEBUGFONT_DATA_SIZE					(DEBUGFONT_TEXTURE_WIDTH*DEBUGFONT_TEXTURE_HEIGHT)
 #define DEBUGFONT_TAB_SIZE					4
@@ -103,9 +106,9 @@ public:
 private:
 	static void print(const char *pszText, s32 count);
 
-	static inline f32 calcPos(s32 pos, s32 dim)
+	static inline f32 calcPos(f32 pos, s32 dim)
 	{
-		return ((f32)pos - ((f32)dim*0.5f))/((f32)dim*0.5f);
+		return (pos - ((f32)dim*0.5f))/((f32)dim*0.5f);
 	}
 
 	static inline f32 calcS0(u8 c)

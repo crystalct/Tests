@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\debugfont_renderer",
+    "\\debugfont_renderer\\include",
+    "\\debugfont_renderer\\shaders",
+    "\\debugfont_renderer\\source",
+    "\\rsx_Basic_Wallpaper2",
+    "\\rsx_Basic_Wallpaper2\\source"
+  ],
+  "SelectedNode": "\\debugfont_renderer\\source\\debugfont.cpp",
+  "PreviewInSolutionExplorer": false
+}

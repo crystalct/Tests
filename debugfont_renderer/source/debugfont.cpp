@@ -106,6 +106,10 @@ void DebugFont::print(const char *pszText, s32 count)
 {
 	s32 c, offset, pass, numPasses;
 	u32 deltaUTF;
+	u16 deltaY;
+	u16 gly_Height;
+	u16 gly_Width;
+	u32 idx = 0;
 
 	if(!spRenderer) return;
 
@@ -114,6 +118,7 @@ void DebugFont::print(const char *pszText, s32 count)
 
 	spRenderer->printStart(sR, sG, sB, sA);
 
+	//::printf("String: %s\n", pszText);
 	for(pass=0;pass < numPasses;pass++) {
 		s32 numVerts = 0;
 		TexCoord *pTexCoords = spTexCoords[pass&1];
@@ -121,14 +126,20 @@ void DebugFont::print(const char *pszText, s32 count)
 		Color *pColors = spColors[pass&1];
 
 		for(c=0;(offset + c) < count && c < DEBUGFONT_MAX_CHAR_COUNT;c++) {
-			if(isPrintable(pszText[offset + c])) {
+			if (isPrintable(pszText[offset + c])) {
 				// top left
-				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe, sXRes);
-				//::printf("REAL X: %f\n", pPositions[numVerts].x);
-				pPositions[numVerts].y = calcPos(sYPos + sTopSafe, sYRes)*-1.0f;
+				ntex_off[idx] = get_ttf_char(pszText + offset + c, &deltaUTF, &deltaY, &gly_Width, &gly_Height);
+				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2), sXRes);
+				
+				pPositions[numVerts].y = calcPos((float)sYPos + sTopSafe + (TTF_UY - gly_Height) * GLYPH_HEIGHT_REL, sYRes) * -1.0f ;
+				
 				pPositions[numVerts].z = 0.0f;
+				
 				pTexCoords[numVerts].s = 0.0f; // calcS0((u8)pszText[offset + c]);
 				pTexCoords[numVerts].t = 0.0f; // calcT0((u8)pszText[offset + c]);
+				
+				//::printf("REAL 1 X: %f", pPositions[numVerts].x);
+				//::printf(" REAL 1 Y: %f\n", pPositions[numVerts].y);
 				pColors[numVerts].r = sR;
 				pColors[numVerts].g = sG;
 				pColors[numVerts].b = sB;
@@ -136,11 +147,16 @@ void DebugFont::print(const char *pszText, s32 count)
 				numVerts++;
 
 				// top right
-				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + getGlyphWidth(), sXRes);
-				pPositions[numVerts].y = calcPos(sYPos + sTopSafe, sYRes)*-1.0f;
+				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + getGlyphWidth() + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2), sXRes);
+				pPositions[numVerts].y = calcPos((float)sYPos + sTopSafe + (TTF_UY - gly_Height) * GLYPH_HEIGHT_REL, sYRes)*-1.0f ;
+				
 				pPositions[numVerts].z = 0.0f;
+				
 				pTexCoords[numVerts].s = 1.0f; //calcS1((u8)pszText[offset + c]);
 				pTexCoords[numVerts].t = 0.0f; //calcT0((u8)pszText[offset + c]);
+				
+				//::printf("REAL 2 X: %f", pPositions[numVerts].x);
+				//::printf(" REAL 2 Y: %f\n", pPositions[numVerts].y);
 				pColors[numVerts].r = sR;
 				pColors[numVerts].g = sG;
 				pColors[numVerts].b = sB;
@@ -148,54 +164,43 @@ void DebugFont::print(const char *pszText, s32 count)
 				numVerts++;
 
 				// bottom right
-				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + getGlyphWidth(), sXRes);
-				pPositions[numVerts].y = calcPos(sYPos + sTopSafe + getGlyphHeight(), sYRes)*-1.0f;
+				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + getGlyphWidth() + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2), sXRes);
+				pPositions[numVerts].y = calcPos((float)sYPos + sTopSafe + gly_Height * GLYPH_HEIGHT_REL + (TTF_UY - gly_Height) * GLYPH_HEIGHT_REL, sYRes)*-1.0f;
+				
 				pPositions[numVerts].z = 0.0f;
+				
 				pTexCoords[numVerts].s = 1.0f; //calcS1((u8)pszText[offset + c]);
 				pTexCoords[numVerts].t = 1.0f; //calcT1((u8)pszText[offset + c]);
+				
+				//::printf("REAL 3 X: %f", pPositions[numVerts].x);
+				//::printf(" REAL 3 Y: %f\n", pPositions[numVerts].y);
 				pColors[numVerts].r = sR;
 				pColors[numVerts].g = sG;
 				pColors[numVerts].b = sB;
 				pColors[numVerts].a = sA;
 				numVerts++;
-#ifndef DEBUGFONT_USE_QUADS
-				// bottom right
-				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + getGlyphWidth(), sXRes);
-				pPositions[numVerts].y = calcPos(sYPos + sTopSafe + getGlyphHeight(), sYRes)*-1.0f;
-				pPositions[numVerts].z = 0.0f;
-				pTexCoords[numVerts].s = calcS1((u8)pszText[offset + c]);
-				pTexCoords[numVerts].t = calcT1((u8)pszText[offset + c]);
-				pColors[numVerts].r = sR;
-				pColors[numVerts].g = sG;
-				pColors[numVerts].b = sB;
-				pColors[numVerts].a = sA;
-				numVerts++;
-#endif
+
 				// bottom left
-				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe, sXRes);
-				pPositions[numVerts].y = calcPos(sYPos + sTopSafe + getGlyphHeight(), sYRes)*-1.0f;
+				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2), sXRes);
+				pPositions[numVerts].y = calcPos((float)sYPos + sTopSafe + gly_Height * GLYPH_HEIGHT_REL + (TTF_UY - gly_Height) * GLYPH_HEIGHT_REL, sYRes)*-1.0f;
+				
 				pPositions[numVerts].z = 0.0f;
+				
 				pTexCoords[numVerts].s = 0.0f; //calcS0((u8)pszText[offset + c]);
 				pTexCoords[numVerts].t = 1.0f; //calcT1((u8)pszText[offset + c]);
+				
+				//::printf("REAL 4 X: %f", pPositions[numVerts].x);
+				//::printf(" REAL 4 Y: %f\n", pPositions[numVerts].y);
 				pColors[numVerts].r = sR;
 				pColors[numVerts].g = sG;
 				pColors[numVerts].b = sB;
 				pColors[numVerts].a = sA;
 				numVerts++;
-#ifndef DEBUGFONT_USE_QUADS
-				// top left
-				pPositions[numVerts].x = calcPos(sXPos + sLeftSafe, sXRes);
-				pPositions[numVerts].y = calcPos(sYPos + sTopSafe, sYRes)*-1.0f;
-				pPositions[numVerts].z = 0.0f;
-				pTexCoords[numVerts].s = calcS0((u8)pszText[offset + c]);
-				pTexCoords[numVerts].t = calcT0((u8)pszText[offset + c]);
-				pColors[numVerts].r = sR;
-				pColors[numVerts].g = sG;
-				pColors[numVerts].b = sB;
-				pColors[numVerts].a = sA;
-				numVerts++;
-#endif
-				sXPos += (getGlyphWidth() + 1);
+
+				sXPos += (int)((gly_Width * (float)GLYPH_WIDTH_REL) + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2) + 1.99);
+				//::printf("char: %c - gly_Width %d - dxPos %d - dY: %d - dyPos: %d\n", 
+					//pszText[offset + c], gly_Width, (int)((gly_Width * (float)GLYPH_WIDTH_REL) + 1), deltaY, gly_Height);
+
 			}
 			else if(pszText[offset + c] == '\n') {
 				sXPos = 0;
@@ -213,15 +218,17 @@ void DebugFont::print(const char *pszText, s32 count)
 				}
 			}
 			else {
-				sXPos += (getGlyphWidth() + 1);
+				sXPos += (int)((gly_Width * (float)GLYPH_WIDTH_REL) + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2) + 1.99);
 			}
 
-			if(sXPos + (getGlyphWidth() + 1) >= sXRes - (sLeftSafe + sRightSafe)) {
+			if(sXPos + (int)((gly_Width * (float)GLYPH_WIDTH_REL) + (float)(GLYPH_WIDTH_REL * (TTF_UX - gly_Width) / 2) + 1.99) >= sXRes - (sLeftSafe + sRightSafe)) {
 				sXPos = 0;
 				sYPos += (getGlyphHeight() + 1);
 			}
-
-			ntex_off[numVerts/4] = get_ttf_char(pszText + offset + c, &deltaUTF);
+			//::printf("CALL get_ttf_char - IDX: %d - offset: %d - c: %d \n", idx, offset, c);
+			
+			idx++;
+			c += deltaUTF;
 		}
 
 		
@@ -229,7 +236,7 @@ void DebugFont::print(const char *pszText, s32 count)
 		
 		spRenderer->printPass(pPositions, pTexCoords, pColors, numVerts, ntex_off);
 		
-		c += deltaUTF;
+		
 	}
 
 	spRenderer->printEnd();

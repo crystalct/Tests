@@ -5,6 +5,7 @@
 #include <sysutil/video.h>
 #include <math.h>
 #include "fba_rl.h"
+#include "mesh.h"
 #include "sqlite.h"
 
 //
@@ -66,6 +67,8 @@
 #define DIR_SKIP_HIDDEN			0x20		//skip entries starting with "." besides dot and dotdot
 #define DIR_NO_DOT_AND_DOTDOT	( DIR_SKIP_DOT | DIR_SKIP_DOTDOT )
 
+#define GCM_APP_WAIT_LABEL_INDEX		128
+#define HOSTBUFFER_SIZE		(128*1024*1024)
 
 enum CoreOptions {
 	CoreOptionsInvalid,
@@ -112,15 +115,25 @@ typedef struct FBA_GAMES_S
 	char key_string[KEY_MAX_LENGTH];
 } FBA_GAMES;
 
+struct tex_dim {
+	u32 w;
+	u32 h;
+};
 
 class c_tex
 {
 public:
 	uint32_t				nTexture;
-	char* pszTexPath;
-	bool bTextureOK;
-	pngData* png;
-	pngData* pngSec;
+	char*					pszTexPath;
+	bool					bTextureOK;
+	pngData*				png;
+	pngData*				pngSec;
+	u32						pngBmpOffset;
+	u32*					texture_buffer[MAXQUADXTEX];
+	u32						texture_offset[MAXQUADXTEX];
+	struct tex_dim			texture_dim[MAXQUADXTEX];
+	u32						nQuads;
+	SMeshBuffer*			quad[MAXQUADXTEX];
 
 	c_tex(uint32_t _nTexture, char* szPath);
 	c_tex(uint32_t _nTexture, uint32_t display_mode);

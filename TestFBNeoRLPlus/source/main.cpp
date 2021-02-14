@@ -47,6 +47,12 @@ u32 VertexBufferOffset;
 
 u32 running = 0;
 
+vu32* wait_label = NULL;
+u32 sLabelValue = 0;
+
+vu32* mLabel = NULL;
+u32 myLabelValue = 0;
+
 u32 fp_offset;
 u32 *fp_buffer;
 
@@ -96,6 +102,7 @@ u32 inited;
 #include "spu_soundmodule_bin.h"
 
 extern "C" {
+	
 	static void program_exit_callback()
 	{
 		//gcmSetWaitFlip(gGcmContext);
@@ -136,57 +143,70 @@ static void dialog_handler(msgButton button, void* usrData) {
 	}
 }
 
-SMeshBuffer* createQuad(Point3 P1, Point3 P2, Point3 P3, Point3 P4)
-{
-	u32 i;
-	SColor col(255, 255, 255, 255);
-	SMeshBuffer* buffer = new SMeshBuffer();
-	const u16 u[6] = { 0,1,2,   0,3,1 };
 
-	buffer->indices.set_used(6);
-
-	for (i = 0; i < 6; i++) buffer->indices[i] = u[i];
-
-	buffer->vertices.set_used(4);
-
-	//                              position, normal,    texture
-	buffer->vertices[0] = S3DVertex(P1.getX(), P1.getY(), P1.getZ(), -1, -1, -1, col, 0, 1);
-	buffer->vertices[1] = S3DVertex(P2.getX(), P2.getY(), P2.getZ(),  1, -1, -1, col, 1, 0);
-	buffer->vertices[2] = S3DVertex(P3.getX(), P3.getY(), P3.getZ(),  1,  1, -1, col, 0, 0);
-	buffer->vertices[3] = S3DVertex(P4.getX(), P4.getY(), P4.getZ(), -1,  1, -1, col, 1, 1);
-
-	
-	rsxAddressToOffset(&buffer->vertices[0].pos, &buffer->pos_off);
-	rsxAddressToOffset(&buffer->vertices[0].nrm, &buffer->nrm_off);
-	rsxAddressToOffset(&buffer->vertices[0].col, &buffer->col_off);
-	rsxAddressToOffset(&buffer->vertices[0].u, &buffer->uv_off);
-	rsxAddressToOffset(&buffer->indices[0], &buffer->ind_off);
-
-	return buffer;
-}
 static void init_texture()
 {
 
 	u32 i;
 	u8* buffer;
-
+	u32 offset = 0;
 	//Init png texture
 	const u8* data = (u8*)png->bmp_out;
-	texture_buffer = (u32*)rsxMemalign(128, (png->height * png->pitch));
-
+	texture_buffer = (u32*)rsxMemalign(128, (1920*1080*4));
+	
 	if (!texture_buffer) return;
 
 	rsxAddressToOffset(texture_buffer, &texture_offset);
-
-	buffer = (u8*)texture_buffer;
+	
+	memcpy(texture_buffer, png->bmp_out, png->height * png->pitch);
+	
+	/*buffer = (u8*)texture_buffer;
 	for (i = 0; i < png->height * png->pitch; i += 4) {
 		buffer[i + 0] = *data++;
 		buffer[i + 1] = *data++;
 		buffer[i + 2] = *data++;
 		buffer[i + 3] = *data++;
-	}
+	}*/
 }
 
+static void setTexture2(u8 textureUnit)
+{
+	u32 width = 1056;
+	u32 height = 216;
+	u32 pitch = 1056 * 4;
+	gcmTexture texture;
+	printf("Enter setTexture2\n");
+	printf("QUAD 0 offset: 0x%x\n", app.textures[0]->texture_offset[0]);
+	printf("QUAD 0 buffer: %p\n", app.textures[0]->texture_buffer[0]);
+
+	if (!app.textures[0]->texture_buffer[0]) return;
+
+	rsxInvalidateTextureCache(gGcmContext, GCM_INVALIDATE_TEXTURE);
+
+	texture.format = (GCM_TEXTURE_FORMAT_A8R8G8B8 | GCM_TEXTURE_FORMAT_LIN);
+	texture.mipmap = 1;
+	texture.dimension = GCM_TEXTURE_DIMS_2D;
+	texture.cubemap = GCM_FALSE;
+	texture.remap = (
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_B_SHIFT) |
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_G_SHIFT) |
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_R_SHIFT) |
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_A_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_B << GCM_TEXTURE_REMAP_COLOR_B_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_G << GCM_TEXTURE_REMAP_COLOR_G_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_R << GCM_TEXTURE_REMAP_COLOR_R_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_A << GCM_TEXTURE_REMAP_COLOR_A_SHIFT));
+	texture.width = width;
+	texture.height = height;
+	texture.depth = 1;
+	texture.location = GCM_LOCATION_RSX;
+	texture.pitch = pitch;
+	texture.offset = app.textures[0]->texture_offset[0];
+	rsxLoadTexture(gGcmContext, textureUnit, &texture);
+	rsxTextureControl(gGcmContext, textureUnit, GCM_TRUE, 0 << 8, 12 << 8, GCM_TEXTURE_MAX_ANISO_1);
+	rsxTextureFilter(gGcmContext, textureUnit, 0, GCM_TEXTURE_LINEAR, GCM_TEXTURE_LINEAR, GCM_TEXTURE_CONVOLUTION_QUINCUNX);
+	rsxTextureWrapMode(gGcmContext, textureUnit, GCM_TEXTURE_CLAMP_TO_EDGE, GCM_TEXTURE_CLAMP_TO_EDGE, GCM_TEXTURE_CLAMP_TO_EDGE, 0, GCM_TEXTURE_ZFUNC_LESS, 0);
+}
 
 static void setTexture(u8 textureUnit)
 {
@@ -224,15 +244,44 @@ static void setTexture(u8 textureUnit)
 	rsxTextureWrapMode(gGcmContext, textureUnit, GCM_TEXTURE_CLAMP_TO_EDGE, GCM_TEXTURE_CLAMP_TO_EDGE, GCM_TEXTURE_CLAMP_TO_EDGE, 0, GCM_TEXTURE_ZFUNC_LESS, 0);
 }
 
+static void setTexture(u8 textureUnit, u32 * tex_buffer, u32 tex_offset, u32 width, u32 height)
+{
+	//printf("B: %p - OFF: %d - W: %d - H: %d\n", tex_buffer, tex_offset, width, height);
+	u32 pitch = width * 4;
+	gcmTexture texture;
+
+	if (!tex_buffer) return;
+
+	rsxInvalidateTextureCache(gGcmContext, GCM_INVALIDATE_TEXTURE);
+
+	texture.format = (GCM_TEXTURE_FORMAT_A8R8G8B8 | GCM_TEXTURE_FORMAT_LIN);
+	texture.mipmap = 1;
+	texture.dimension = GCM_TEXTURE_DIMS_2D;
+	texture.cubemap = GCM_FALSE;
+	texture.remap = (
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_B_SHIFT) |
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_G_SHIFT) |
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_R_SHIFT) |
+		(GCM_TEXTURE_REMAP_TYPE_REMAP << GCM_TEXTURE_REMAP_TYPE_A_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_B << GCM_TEXTURE_REMAP_COLOR_B_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_G << GCM_TEXTURE_REMAP_COLOR_G_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_R << GCM_TEXTURE_REMAP_COLOR_R_SHIFT) |
+		(GCM_TEXTURE_REMAP_COLOR_A << GCM_TEXTURE_REMAP_COLOR_A_SHIFT));
+	texture.width = width;
+	texture.height = height;
+	texture.depth = 1;
+	texture.location = GCM_LOCATION_RSX;
+	texture.pitch = pitch;
+	texture.offset = tex_offset;
+	rsxLoadTexture(gGcmContext, textureUnit, &texture);
+	rsxTextureControl(gGcmContext, textureUnit, GCM_TRUE, 0 << 8, 12 << 8, GCM_TEXTURE_MAX_ANISO_1);
+	rsxTextureFilter(gGcmContext, textureUnit, 0, GCM_TEXTURE_LINEAR, GCM_TEXTURE_LINEAR, GCM_TEXTURE_CONVOLUTION_QUINCUNX);
+	rsxTextureWrapMode(gGcmContext, textureUnit, GCM_TEXTURE_CLAMP_TO_EDGE, GCM_TEXTURE_CLAMP_TO_EDGE, GCM_TEXTURE_CLAMP_TO_EDGE, 0, GCM_TEXTURE_ZFUNC_LESS, 0);
+}
+
 
 static void setDrawEnv()
 {
-	rsxSetColorMask(gGcmContext,GCM_COLOR_MASK_B |
-							GCM_COLOR_MASK_G |
-							GCM_COLOR_MASK_R |
-							GCM_COLOR_MASK_A);
-
-	rsxSetColorMaskMrt(gGcmContext,0);
 
 	u16 x,y,w,h;
 	f32 min, max;
@@ -253,17 +302,14 @@ static void setDrawEnv()
 	offset[2] = (max + min)*0.5f;
 	offset[3] = 0.0f;
 
+	rsxSetCallCommand(gGcmContext, state_offset);
+	while (*wait_label != sLabelValue)
+		usleep(10);
+	sLabelValue++;
+
 	rsxSetViewport(gGcmContext,x, y, w, h, min, max, scale, offset);
 	rsxSetScissor(gGcmContext,x,y,w,h);
 
-	rsxSetDepthTestEnable(gGcmContext, GCM_FALSE);
-	rsxSetDepthFunc(gGcmContext,GCM_LESS);
-	rsxSetShadeModel(gGcmContext,GCM_SHADE_MODEL_SMOOTH);
-	rsxSetDepthWriteEnable(gGcmContext,1);
-	rsxSetFrontFace(gGcmContext,GCM_FRONTFACE_CCW);
-	rsxSetBlendEnable(gGcmContext, GCM_FALSE);
-	//rsxSetBlendFunc(gGcmContext, GCM_SRC_ALPHA, GCM_ONE_MINUS_SRC_ALPHA, GCM_SRC_COLOR, GCM_DST_COLOR);
-	//rsxSetBlendEquation(gGcmContext, GCM_FUNC_ADD, GCM_FUNC_ADD);
 }
 
 void init_shader()
@@ -286,8 +332,7 @@ void init_shader()
 
 	rsxAddressToOffset(fp_buffer,&fp_offset);
 	textureUnit = rsxFragmentProgramGetAttrib(fpo, "texture");
-	if (textureUnit)
-		printf("textureUnit OK\n");
+	
 
 }
 
@@ -319,6 +364,7 @@ void drawFrame()
 	mesh = quad;
 	setTexture(textureUnit->index);
 
+
 	rsxBindVertexArrayAttrib(gGcmContext, GCM_VERTEX_ATTRIB_POS, 0, mesh->pos_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 	rsxBindVertexArrayAttrib(gGcmContext, GCM_VERTEX_ATTRIB_NORMAL, 0, mesh->nrm_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 	rsxBindVertexArrayAttrib(gGcmContext, GCM_VERTEX_ATTRIB_TEX0, 0, mesh->uv_off, sizeof(S3DVertex), 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
@@ -330,7 +376,66 @@ void drawFrame()
 	rsxAddressToOffset(&mesh->indices[0], &offset);
 	rsxDrawIndexArray(gGcmContext, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
 
+	rsxSetWriteTextureLabel(gGcmContext, GCM_APP_WAIT_LABEL_INDEX, sLabelValue);
+	rsxFlushBuffer(gGcmContext);
+
+}
+
+void drawFrame2(int section)
+{
+	u32 i, offset;
+	SMeshBuffer* mesh = NULL;
+
+	setDrawEnv();
+
+
+	rsxSetClearColor(gGcmContext, 0);
+	rsxSetClearDepthStencil(gGcmContext, 0xffffff00);
+	rsxClearSurface(gGcmContext, GCM_CLEAR_R |
+		GCM_CLEAR_G |
+		GCM_CLEAR_B |
+		GCM_CLEAR_A |
+		GCM_CLEAR_S |
+		GCM_CLEAR_Z);
+
+	rsxSetZControl(gGcmContext, GCM_FALSE, GCM_TRUE, GCM_TRUE);
+
+	for (i = 0; i < 8; i++)
+		rsxSetViewportClip(gGcmContext, i, display_width, display_height);
+
+	Matrix4 tempMatrix = transpose(Matrix4::identity());
+
 	
+	for (i = 0; i < app.textures[section]->nQuads; i++) {
+		mesh = app.textures[section]->quad[i];
+		/*setTexture(textureUnit->index, app.textures[TEX_MAIN_MENU]->texture_buffer[0],
+				app.textures[TEX_MAIN_MENU]->texture_offset[0], app.textures[TEX_MAIN_MENU]->texture_dim[0].w,
+				app.textures[TEX_MAIN_MENU]->texture_dim[0].h);*/
+		setTexture(textureUnit->index, app.textures[section]->texture_buffer[i], app.textures[section]->texture_offset[i],
+			app.textures[section]->texture_dim[i].w, app.textures[section]->texture_dim[i].h);
+		rsxBindVertexArrayAttrib(gGcmContext, GCM_VERTEX_ATTRIB_POS, 0, mesh->pos_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+		rsxBindVertexArrayAttrib(gGcmContext, GCM_VERTEX_ATTRIB_NORMAL, 0, mesh->nrm_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+		rsxBindVertexArrayAttrib(gGcmContext, GCM_VERTEX_ATTRIB_TEX0, 0, mesh->uv_off, sizeof(S3DVertex), 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+
+		rsxLoadVertexProgram(gGcmContext, vpo, vp_ucode);
+		rsxSetVertexProgramParameter(gGcmContext, vpo, projMatrix, (float*)&tempMatrix);
+
+		rsxLoadFragmentProgramLocation(gGcmContext, fpo, fp_offset, GCM_LOCATION_RSX);
+		
+		rsxSetUserClipPlaneControl(gGcmContext, GCM_USER_CLIP_PLANE_DISABLE,
+			GCM_USER_CLIP_PLANE_DISABLE,
+			GCM_USER_CLIP_PLANE_DISABLE,
+			GCM_USER_CLIP_PLANE_DISABLE,
+			GCM_USER_CLIP_PLANE_DISABLE,
+			GCM_USER_CLIP_PLANE_DISABLE);
+		
+		rsxAddressToOffset(&mesh->indices[0], &offset);
+		rsxDrawIndexArray(gGcmContext, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
+
+		rsxSetWriteTextureLabel(gGcmContext, GCM_APP_WAIT_LABEL_INDEX, sLabelValue);
+		rsxFlushBuffer(gGcmContext);
+	}
+
 }
 
 CapApp app;
@@ -381,7 +486,7 @@ void CapApp::onRender()
 
 	/*////if(fbaRL) { fbaRL->RenderBackground(); }
 	*/
-	if (fbaRL) { fbaRL->nFrameStep = 0; fbaRL->DisplayFrame(); }
+	//if (fbaRL) { fbaRL->nFrameStep = 0; fbaRL->DisplayFrame(); }
 	if (fbaRL) { fbaRL->nFrameStep = 1; fbaRL->DisplayFrame(); }
 }
 
@@ -469,24 +574,29 @@ void CapApp::initGraphics()
 	printf("rsxtest started...\n");
 
 	//init_screen(host_addr, HOSTBUFFER_SIZE);
-	initScreen();
+	initScreen(HOSTBUFFER_SIZE);
 	//Init background Image
 	png = new pngData;
 	pngLoadFromFile("/dev_hdd0/game/FBNE00123/USRDIR/LOADING1.PNG", png);
-
+	//pngLoadFromBuffer(wall1_png_bin, wall1_png_bin_size, png);
 	
 	//Create quad
 	quad = createQuad(Point3(-1.0, -1.0, 0), Point3(1.0, 1.0, 0), Point3(-1.0, 1.0, 0), Point3(1.0, -1.0, 0));
 
+	wait_label = gcmGetLabelAddress(GCM_APP_WAIT_LABEL_INDEX);
+	*wait_label = sLabelValue;
+
+	mLabel = gcmGetLabelAddress(64);
+	*mLabel = myLabelValue;
 
 	init_shader();
 	init_texture();
 
 
-	setDrawEnv();
+	//setDrawEnv();
 
-	setRenderTarget(curr_fb);
-	for (u32 i=0; i < 4; i++) {
+	//setRenderTarget(curr_fb);
+	for (u32 i=0; i < 10; i++) {
 		usleep(250);
 		drawFrame();
 		flip();
@@ -709,7 +819,7 @@ bool CapApp::onInit(int argc, char* argv[])
 #endif
 
 	//pngLoadFromBuffer(wall1_png_bin, wall1_png_bin_size, png);
-	memcpy(texture_buffer, textures[TEX_MAIN_MENU]->png->bmp_out, textures[TEX_MAIN_MENU]->png->height * textures[TEX_MAIN_MENU]->png->pitch);
+	//memcpy(texture_buffer, textures[TEX_MAIN_MENU]->png->bmp_out, textures[TEX_MAIN_MENU]->png->height * textures[TEX_MAIN_MENU]->png->pitch);
 
 /*	running = 1;
 	while (running) {
@@ -736,7 +846,8 @@ bool CapApp::onInit(int argc, char* argv[])
 		sysUtilCheckCallback();
 		onRender();
 		onUpdate();
-		drawFrame();
+
+		drawFrame2(fbaRL->nSection);
 		flip();
 		
 	}

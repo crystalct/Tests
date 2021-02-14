@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -263,7 +263,7 @@ void drawFrame()
 	rsxAddressToOffset(&mesh->indices[0], &offset);
 	rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
 
-	mesh = quad2;
+	/*mesh = quad2;
 	u32 app;
 
 	gcmTexture tex;
@@ -301,7 +301,7 @@ void drawFrame()
 
 	rsxLoadFragmentProgramLocation(context, fpo, fp_offset, GCM_LOCATION_RSX);
 	rsxAddressToOffset(&mesh->indices[0], &offset);
-	rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
+	rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);*/
 }
 
 int main(int argc,const char *argv[])
@@ -358,27 +358,25 @@ int main(int argc,const char *argv[])
 		}
 		
 		drawFrame();
-		int ypos = 53;
-		int xpos = 10;
+		int ypos = 55;
+		int xpos = 12;
 		DebugFont::setPosition(xpos, ypos);
 		DebugFont::setColor(0.5f, 1.0f, 0.5f, 1.0f);
 
-		DebugFont::print("CROSS Button to enable horizontal scanlines");
-		ypos += 12;
+		DebugFont::print("PA成 aaaa");
+		/*ypos = 54;
+		xpos = 11;
 		DebugFont::setPosition(xpos, ypos);
-		DebugFont::print("SQUARE Button to enable vertical scanlines");
-		ypos += 12;
-		DebugFont::setPosition(xpos, ypos);
-		DebugFont::print("TRIANGLE Button to disable scanlines");
-		ypos += 12;
-		DebugFont::setPosition(xpos, ypos);
-		DebugFont::print("CIRCLE Button to exit");
+		DebugFont::setColor(1.0f, 0.0f, 0.0f, 1.0f);
+		DebugFont::print("Hello  memory");
+		DebugFont::setPosition(xpos, ypos + 40);
+		DebugFont::print("llllllllo ");*/
 
 		flip();
 	}
 
 done:
-    printf("rsxtest done...\n");
+    printf("rsxtest done...%lu\n",sizeof(f32));
 	DebugFont::shutdown();
 	program_exit_callback();
     return 0;

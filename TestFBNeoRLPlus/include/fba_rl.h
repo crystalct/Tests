@@ -20,6 +20,10 @@
 #define _APP_TITLE "\tFB NEO PLUS RETRO LOADER " _APP_VER " - by CaptainCPS-X [2013] CrystalCT [2020]"
 // --------------------------------------------------------------------
 
+#define MAX_WIDTH	1920
+#define MAX_HEIGHT	1080
+#define PITCH		(MAX_WIDTH * 4)
+#define MAXQUADXTEX 9
 
 
 /*struct FBA_DRV

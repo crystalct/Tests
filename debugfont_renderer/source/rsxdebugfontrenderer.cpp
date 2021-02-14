@@ -89,7 +89,7 @@ void RSXDebugFontRenderer::init()
 	TTFLoadFont(1, (char*)"/dev_flash/data/font/SCE-PS3-DH-R-CGB.TTF", NULL, 0);
 	TTFLoadFont(2, (char*)"/dev_flash/data/font/SCE-PS3-SR-R-JPN.TTF", NULL, 0);
 	TTFLoadFont(3, (char*)"/dev_flash/data/font/SCE-PS3-YG-R-KOR.TTF", NULL, 0);
-	
+	SetCurrentFont(3);
 	free_mem = (u32*)init_ttf_table((u16*)texture_mem);
 
 	initShader();
@@ -179,14 +179,22 @@ void RSXDebugFontRenderer::printPass(DebugFont::Position* pPositions, DebugFont:
 	memcpy(mPosition, pPositions, numVerts * sizeof(f32) * 3);
 	memcpy(mTexCoord, pTexCoords, numVerts * sizeof(f32) * 2);
 	memcpy(mColor, pColors, numVerts * sizeof(f32) * 4);
+	float* pippo = (float*)mTexCoord;
 	for (s32 i=0; i < numVerts/4; i++) {
 		//printf("POSITION: %p - inc: %lu, POS++: %p\n", pPositions, i * (4 * sizeof(f32) * 3), (u8*)pPositions + (i * (4 * sizeof(f32) * 3)));
 		/*memcpy(mPosition, (u8 *)(pPositions + (i *( 4 * sizeof(f32) * 3))), 4 * sizeof(f32) * 3);
 		memcpy(mTexCoord, (u8 *)pTexCoords + (i *( 4 * sizeof(f32) * 3)), 4 * sizeof(f32) * 2);
 		memcpy(mColor, (u8 *)pColors + (i * (4 * sizeof(f32) * 4)), 4 * sizeof(f32) * 4);*/
-		//printf("I: %d - POSx: %f\n",i, *(float *)(&mPosition[0] + 4 * sizeof(f32) * 3));
+		/*printf("POSx: %f ", pippo[i*8]);
+		printf("y: %f \n",pippo[i*8+1]);
+		printf("POSx: %f ", pippo[i*8+2]);
+		printf("y: %f\n", pippo[i*8+3]);
+		printf("POSx: %f ", pippo[i * 8 + 4]);
+		printf("y: %f \n", pippo[i * 8 + 5] );
+		printf("POSx: %f ", pippo[i * 8 + 6] );
+		printf("y: %f\n", pippo[i * 8 + 7]);*/
 		rsxBindVertexArrayAttrib(mContext, mPosIndex->index, 0, mPositionOffset + (i * (4 * sizeof(f32) * 3)), sizeof(f32) * 3, 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
-		rsxBindVertexArrayAttrib(mContext, mTexIndex->index, 0, mTexCoordOffset + (i * (4 * sizeof(f32) * 3)), sizeof(f32) * 2, 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+		rsxBindVertexArrayAttrib(mContext, mTexIndex->index, 0, mTexCoordOffset + (i * (4 * sizeof(f32) * 2)), sizeof(f32) * 2, 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 		rsxBindVertexArrayAttrib(mContext, mColIndex->index, 0, mColorOffset + (i * (4 * sizeof(f32) * 4)), sizeof(f32) * 4, 4, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 
 		gcmTexture tex;
@@ -212,13 +220,14 @@ void RSXDebugFontRenderer::printPass(DebugFont::Position* pPositions, DebugFont:
 
 		rsxTextureControl(mContext, mTexUnit->index, GCM_TRUE, 0 << 8, 12 << 8, GCM_TEXTURE_MAX_ANISO_1);
 		rsxTextureFilter(mContext, mTexUnit->index, 0, GCM_TEXTURE_NEAREST_MIPMAP_LINEAR, GCM_TEXTURE_LINEAR, GCM_TEXTURE_CONVOLUTION_QUINCUNX);
-		rsxTextureWrapMode(mContext, mTexUnit->index, GCM_TEXTURE_REPEAT, GCM_TEXTURE_REPEAT, GCM_TEXTURE_REPEAT, GCM_TEXTURE_UNSIGNED_REMAP_NORMAL, GCM_TEXTURE_ZFUNC_LESS, 0);
+		//rsxTextureWrapMode(mContext, mTexUnit->index, GCM_TEXTURE_REPEAT, GCM_TEXTURE_REPEAT, GCM_TEXTURE_REPEAT, GCM_TEXTURE_UNSIGNED_REMAP_NORMAL, GCM_TEXTURE_ZFUNC_LESS, 0);
+		rsxTextureWrapMode(mContext, mTexUnit->index, GCM_TEXTURE_BORDER, GCM_TEXTURE_BORDER, GCM_TEXTURE_BORDER, 0 , GCM_TEXTURE_ZFUNC_LESS, 0);
 
 		//rsxDrawVertexArray(mContext, DEBUGFONT_PRIMITIVE, 0, numVerts);
 		rsxDrawVertexArray(mContext, DEBUGFONT_PRIMITIVE, 0, 4);
-		rsxInvalidateVertexCache(mContext);
+		
 	}
-	
+	rsxInvalidateVertexCache(mContext);
 	rsxSetWriteBackendLabel(mContext, sLabelId, mLabelValue);
 
 	rsxFlushBuffer(mContext);

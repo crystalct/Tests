@@ -125,4 +125,6 @@ public:
 	u32 ind_off;
 };
 
+SMeshBuffer* createQuad(Point3 P1, Point3 P2, Point3 P3, Point3 P4);
+
 #endif

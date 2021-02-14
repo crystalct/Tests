@@ -302,18 +302,20 @@ static void DrawTextBox_ttf(float x, float y, float z, float w, float h, u32 rgb
 }
 */
 
-#define TTF_UX 30
-#define TTF_UY 24
 
-u32 get_ttf_char(const char* string, u32 *next_char)
+
+u32 get_ttf_char(const char* string, u32 *next_char, u16* deltaY, u16* ttf_width, u16* ttf_height)
 {
+    //printf("CALLED\n");
     int l, n, m, ww, ww2;
+    //printf("Char: %c ", string[0]);
     u8 colorc;
     u32 ttf_char;
     u8* ustring = (u8*)string;
 
 
         if (*ustring & 128) {
+            //printf("*ustring & 128\n");
             m = 1;
 
             if ((*ustring & 0xf8) == 0xf0) { // 4 bytes
@@ -347,11 +349,12 @@ u32 get_ttf_char(const char* string, u32 *next_char)
             *next_char = 0;
         }
 
-        
+        //printf("*next_char: %d\n", *next_char);
 
         // search ttf_char
         if (ttf_char < 128) n = ttf_char;
         else {
+            //printf("ttf_char: 0x%x\n", ttf_char);
             m = 0;
             int rel = 0;
 
@@ -439,7 +442,12 @@ u32 get_ttf_char(const char* string, u32 *next_char)
         // displaying the character
         ttf_font_datas[l].flags |= 2; // in use
         ttf_font_datas[l].r_use = r_use;
-        //printf("L: %d, Str: %s, delta: %d, offset: x0%x\n", l, string, *next_char, ttf_font_datas[l].offset);
+        /*printf("L: %d, Str: %s, delta: %d, offset: x0%x\n", l, string, *next_char, ttf_font_datas[l].offset);
+        printf(" delta: %d - Ystart: %d - w: %d - h: %d\n",
+            *next_char, ttf_font_datas[l].y_start, ttf_font_datas[l].width, ttf_font_datas[l].height);*/
+        *deltaY = ttf_font_datas[l].y_start;
+        *ttf_width = ttf_font_datas[l].width;
+        *ttf_height = ttf_font_datas[l].height;
         return ttf_font_datas[l].offset;
 }
 

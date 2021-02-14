@@ -1,13 +1,14 @@
 // =======================================================================
 // DISPLAY SECTIONS (FRAME)
 
+#include <unistd.h>
 #include "capp.h"
 #include "fnt_print.h"
 #include <rsx/rsx.h>
 #include <ppu-lv2.h>
 #include <lv2/memory.h>
-#define MWIDTH	1920
-#define MHEIGHT	1080
+#include "rsxutil.h"
+
 
 #define COLOR_WHITE		0xFFFFFF
 #define COLOR_BLACK		0x000000
@@ -31,6 +32,14 @@
 
 extern fnt_t fontM,fontL;
 extern u32* texture_buffer;
+extern u32 texture_offset;
+extern u32 myLabelValue;
+extern vu32* mLabel;
+
+extern "C" {
+	inline void memcpy16(void* dst, const void* src, size_t n);
+	
+}
 
 //static float nShadowXYpos		= 0.00250f;
 //static float nShadowXYpos2		= 0.00200f;
@@ -81,10 +90,20 @@ void c_fbaRL::DisplayFrame()
 	}
 }
 
+void getsubimage(u32* src, u32* dest, u32 x, u32 y, u32 w, u32 h, u32 w_src, u32 h_src) {
+	u32 idx = 0;
+	for (u32 j = 0; j < h; j++) {
+		for (u32 i = 0; i < w; i++) {
+			dest[idx] = src[w_src * (y + j) + x + i];
+			idx++;
+		}
+	}
+}
+
 void c_fbaRL::MainMenu_Frame()
 {
-	xPos		= 0.0600f;
-	yPos		= 0.0485f;
+	xPos		= 0.2600f;
+	yPos		= 0.5885f;
 	yPosDiff	= 0.0400f;
 	//float nfontLize = 1.0500f; // big text
 	nColor = nTextColor;
@@ -97,23 +116,53 @@ void c_fbaRL::MainMenu_Frame()
     //rsxBuffer *buf;
     //rsxbuffer = &(app.buffers[app.currentBuffer]);
     //rsxBuffer *buffer = &buffers[currentBuffer];
-	png_src = app.textures[TEX_MAIN_MENU]->png;
-	memcpy(texture_buffer, png_src->bmp_out, png_src->width * png_src->height * sizeof(uint32_t));
+	//png_src = app.textures[TEX_MAIN_MENU]->png;
+	//w = 960; h = 486; x = 96; y = 216;
+	/*rsxFlushBuffer(gGcmContext);
+	rsxSetWaitForIdle(gGcmContext);*/
+	
+	//memset((void*)app.textures[TEX_MAIN_MENU]->texture_buffer[3], 0, 960 * 486 * 4);
+	//getsubimage((u32*)app.textures[TEX_MAIN_MENU]->png, app.textures[TEX_MAIN_MENU]->texture_buffer[3], 
+		//96, 216, 960, 486, 1920, 1080);
+	
+	rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+		app.textures[TEX_MAIN_MENU]->texture_offset[3], 960 * 4, 0, 0, 
+		app.textures[TEX_MAIN_MENU]->pngBmpOffset, PITCH, 96, 216, 960, 486, 4);
+	
+	//rsxFlushBuffer(gGcmContext);
+	//rsxSetWaitForIdle(gGcmContext);
+	//usleep(5000);*/
+	//rsxSetWaitForIdle(gGcmContext);
+	//rsxSetTransferData(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+		//texture_offset, png_src->width * 4, app.textures[TEX_MAIN_MENU]->pngBmpOffset, png_src->width * 4, png_src->width * 4, png_src->height);
+	//rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL, 
+		//texture_offset, PITCH, 100, 100, app.textures[TEX_MAIN_MENU]->pngBmpOffset, PITCH, 0, 0, 800, 600, 4);
+
+	//rsxSetWaitForIdle(gGcmContext);
+	//rsxFlushBuffer(gGcmContext);
+	//rsxSetWaitForIdle(gGcmContext);
+	
+	//memcpy(texture_buffer, png_src->bmp_out, png_src->width * png_src->height * sizeof(uint32_t));
+	//memcpy16((void *)texture_buffer, (const void *)png_src->bmp_out, (size_t) png_src->width * png_src->height * sizeof(uint32_t));
 	////if(nFrameStep == 0) { yPos += nShadowXYpos2; xPos += nShadowXYpos2; }
 	////if(nFrameStep == 0) { nColor = nShadowColor; } // Shadow color
 
 
-
 	snprintf(txt,sizeof(txt),"ver: %s (ip: %s)", _APP_VER, ipaddress);
 	////cellDbgFontPrintf(xPos + 0.0300f + (0.0600f * 2), yPos + 0.0100f + (yPosDiff * 2), nSmallSize, nColor, "ver: "_APP_VER" (ip: %s)", ipaddress);
-    fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)((xPos + 0.0200f + (0.0600f * 2)) * png_src->width),
-                   (int)((yPos + 0.0100f + (yPosDiff * 2)) * png_src->height),
-                    txt, nColor, 0x00000000, fontSize, fontSize);
+	//rsxFlushBuffer(gGcmContext);
+	//rsxSetWaitForIdle(gGcmContext);
+	fnt_print_vram(&fontM, (u32*)app.textures[TEX_MAIN_MENU]->texture_buffer[0],
+		app.textures[TEX_MAIN_MENU]->texture_dim[0].w,
+		(int)((xPos + 0.0200f + (0.0600f * 2)) * app.textures[TEX_MAIN_MENU]->texture_dim[0].w),
+		(int)((yPos + 0.0100f + (yPosDiff * 2)) * app.textures[TEX_MAIN_MENU]->texture_dim[0].h),
+		txt, nColor, 0x00000000, fontSize, fontSize);
 	//if(nFrameStep == 0) { yPos -= nShadowXYpos2; xPos -= nShadowXYpos2; } // reset shadow xy pos
 	//if(nFrameStep == 0) { yPos += nShadowXYpos; xPos += nShadowXYpos; }
 
-	yPos += (yPosDiff * 4) - 0.005f;
-	yPosDiff = 0.0800f;
+	yPos = 0.0185f;
+	xPos = 0.0400f;
+	yPosDiff = 0.1770f;
 
 	////int nMenuItem = main_menu->UpdateTopItem();
 	int nMenuItem = 0;
@@ -135,10 +184,11 @@ void c_fbaRL::MainMenu_Frame()
 
 		////cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "%s", main_menu->item[nMenuItem]->szMenuLabel);
 
-		snprintf(txt,sizeof(txt),"%s", ipaddress);
-		fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
-                   (int)(yPos * png_src->height),
-                    main_menu->item[nMenuItem]->szMenuLabel, nColor, 0x00000000, 1, 1);
+		fnt_print_vram(&fontL, (u32*)app.textures[TEX_MAIN_MENU]->texture_buffer[3], 
+			app.textures[TEX_MAIN_MENU]->texture_dim[3].w, 
+			(int)(xPos * app.textures[TEX_MAIN_MENU]->texture_dim[3].w),
+            (int)(yPos * app.textures[TEX_MAIN_MENU]->texture_dim[3].h),
+            main_menu->item[nMenuItem]->szMenuLabel, nColor, 0x00000000, 1, 1);
 		/*fnt_print_vram(&font, (u32 *)app.textures[TEX_MAIN_MENU]->_texture.pixels,
 					app.textures[TEX_MAIN_MENU]->_texture.width,
 					(int)(xPos * app.textures[TEX_MAIN_MENU]->_texture.width),
@@ -148,6 +198,7 @@ void c_fbaRL::MainMenu_Frame()
 
 		nMenuItem++;
 	}
+	
 }
 
 void c_fbaRL::GameList_Frame()
@@ -156,7 +207,7 @@ void c_fbaRL::GameList_Frame()
 
 	xPos		= 0.3273f;
 	yPos		= 0.2042f;
-	yPosDiff	= 0.0200f;
+	yPosDiff	= 0.0283f;
 
    /* if (app.state.displayMode.resolution == 1)
         fontSize = 2;
@@ -172,7 +223,7 @@ void c_fbaRL::GameList_Frame()
         //rsxbuffer = &(app.buffers[app.currentBuffer]);
         //rsxBuffer *buffer = &buffers[currentBuffer];
         //png_src = app.textures[TEX_GAME_LIST]->png;
-        memcpy(texture_buffer, PNG_SRC->bmp_out, PNG_SRC->width * PNG_SRC->height * sizeof(uint32_t));
+        //memcpy(texture_buffer, PNG_SRC->bmp_out, PNG_SRC->width * PNG_SRC->height * sizeof(uint32_t));
 	}
     game_ord_id = 0;
 
@@ -199,6 +250,8 @@ void c_fbaRL::GameList_Frame()
 
 		int nGame = nGameListTop;
 
+		yPos = 0.01;
+		xPos = 0.025;
 		while(nGame <= (nGameListTop + NGAMELISTMAX))
 		{
 			if(nFilteredGames < 1) break;
@@ -230,11 +283,18 @@ void c_fbaRL::GameList_Frame()
             //memcpy(pszFinalText, games[fgames[nGame]->GameID]->title, 104);
             snprintf(txt, 128, "%s", FBADRV->szTitle );
             //memcpy(pszFinalText, fba_drv->szTitle, 104);
-			fnt_print_vram(&fontM, (u32 *)texture_buffer,
+			
+			//Main cycle
+			fnt_print_vram(&fontM, (u32*)app.textures[SECTION_GAMELIST]->texture_buffer[0],
+				app.textures[SECTION_GAMELIST]->texture_dim[0].w,
+				(int)(xPos * app.textures[SECTION_GAMELIST]->texture_dim[0].w),
+				(int)(yPos * app.textures[SECTION_GAMELIST]->texture_dim[0].h),
+				txt, nColor, 0x00000000, fontSize, fontSize);
+			/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 
 			yPos += yPosDiff;
 
@@ -247,12 +307,12 @@ void c_fbaRL::GameList_Frame()
 	X = round(19.0f  + (551.0f  - app.textures[TEX_PREVIEW]->png->width)/2.0f);
 	Y = round(404.0f + (460.0f  - app.textures[TEX_PREVIEW]->png->height)/2.0f);
 	//printf("Draw to: %d:%d\n",X,Y);
-	fbaRL->DrawIMG(X,Y, app.textures[TEX_PREVIEW]->png);
+	//AGGIUSTARE fbaRL->DrawIMG(X,Y, app.textures[TEX_PREVIEW]->png);
 
 	X = round(19.0f + (551.0f - app.textures[TEX_PREVIEW]->pngSec->width)/2.0f);
 	Y = round(19.0f + (360.0f - app.textures[TEX_PREVIEW]->pngSec->height)/2.0f);
     //printf("Draw to: %d:%d\n",X,Y);
-	fbaRL->DrawIMG(X,Y, app.textures[TEX_PREVIEW]->pngSec);
+	//AGGIUSTARE fbaRL->DrawIMG(X,Y, app.textures[TEX_PREVIEW]->pngSec);
 
 
 	nColor = nTextColor;
@@ -265,30 +325,33 @@ void c_fbaRL::GameList_Frame()
 	snprintf(txt,sizeof(txt),"GAMES AVAILABLE: %d - MISSING: %d",
                 nTotalGames,
                 app.nMissingGames);
-    fnt_print_vram(&fontM, (u32 *)texture_buffer,
+	//AGGIUSTARE
+	/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 
     yPos += yPosDiff;
  	snprintf(txt,sizeof(txt),"FILTER: %s - FILTERED: %d",
                 GetSystemFilter(g_opt_nActiveSysFilter),
                 nFilteredGames);
-    fnt_print_vram(&fontM, (u32 *)texture_buffer,
+	//AGGIUSTARE
+	/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 
     yPos += yPosDiff;
     if (app.ftrack != NULL) {
         snprintf(txt,sizeof(txt),"TRACK: %s", (*app.trackID).c_str());
-        fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
     }
 
 
@@ -305,48 +368,53 @@ void c_fbaRL::GameList_Frame()
 
 		snprintf(txt,sizeof(txt)," TITLE:       %s", FBADRV->szTitle);
 
-		fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," ROMSET:      %s  -  PARENT:      %s",
                     games[game_ord_id]->name,games[nBurnSelected]->parent_name);
-		fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 
 		yPos += yPosDiff;
 
 
 		snprintf(txt,sizeof(txt)," COMPANY:     %s", games[game_ord_id]->company);
-		fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," YEAR:        %s  -  SYSTEM:      %s",
            games[game_ord_id]->year, games[game_ord_id]->subsystem);
-		fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," MAX PLAYERS: %d  -  RESOLUTION:  %s (%s)",
                     games[game_ord_id]->players,games[nBurnSelected]->resolution,games[game_ord_id]->aspectratio);
-		fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 			PNG_SRC->width,
 					(int)(xPos * PNG_SRC->width),
 					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);
+						txt, nColor, 0x00000000, fontSize, fontSize);*/
 		yPos += yPosDiff;
 
 
@@ -355,11 +423,12 @@ void c_fbaRL::GameList_Frame()
 
 
                 snprintf(txt,sizeof(txt)," PATH: %s",FBAGAMES->szPath);
-                fnt_print_vram(&fontM, (u32 *)texture_buffer,
+				//AGGIUSTARE
+				/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 					PNG_SRC->width,
                             (int)(xPos * PNG_SRC->width),
                             (int)(yPos * PNG_SRC->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 
         }
         yPos += yPosDiff;
@@ -370,11 +439,12 @@ void c_fbaRL::GameList_Frame()
             xPos = xPos + 0.25;
         lv2syscall1(352, (uint64_t) &meminfo);
         snprintf(txt,sizeof(txt),"MEMORY TOTAL: %d - AVAIL: %d", meminfo.total / 1024, meminfo.avail / 1024);
-        fnt_print_vram(&fontM, (u32 *)texture_buffer,
+		//AGGIUSTARE
+		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
 			PNG_SRC->width,
 					(int)(xPos  * PNG_SRC->width),
 					(int)((yPos + 0.012) * PNG_SRC->height),
-                    txt, nColor, 0x00000000, fontSize, fontSize);
+                    txt, nColor, 0x00000000, fontSize, fontSize);*/
 		yPos += yPosDiff;
 	}
 
@@ -405,14 +475,14 @@ void c_fbaRL::DrawIMG(int x, int y, pngData *png1){
 		}else
 			error_y=0;
 
-		scr += y* MWIDTH+x;
+		scr += y* MAX_WIDTH+x;
 		int height = png1->height;
-		if((y+height) >= (u32)MHEIGHT)
-			height = MHEIGHT-1-y;
+		if((y+height) >= (u32)MAX_HEIGHT)
+			height = MAX_HEIGHT-1-y;
 
 		int width = png1->width;
-		if((x+width) >= (u32)MWIDTH)
-			width = MWIDTH-x-1;
+		if((x+width) >= (u32)MAX_WIDTH)
+			width = MAX_WIDTH-x-1;
 
 		width-=error_x;
 		height-=error_y;
@@ -421,7 +491,7 @@ void c_fbaRL::DrawIMG(int x, int y, pngData *png1){
         while(height>0){
 			memcpy(scr,png,width*sizeof(u32));
 			png+=png1->pitch>>2;
-			scr+= MWIDTH;
+			scr+= MAX_WIDTH;
 			height--;
 		}
 	}

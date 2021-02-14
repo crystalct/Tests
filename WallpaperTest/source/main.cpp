@@ -72,6 +72,7 @@ rsxProgramAttrib* textureUnit;
 u32 color_index;
 u32 position_index;
 
+u32 selection = 0;
 
 void *vp_ucode = NULL;
 rsxVertexProgram *vpo = (rsxVertexProgram*)diffuse_specular_shader_vpo;
@@ -363,20 +364,21 @@ void drawFrame()
 	rsxAddressToOffset(&mesh->indices[0], &offset);
 	rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
 
-	mesh = quad5;
-	setTexture(textureUnit->index, texture_buffer5, texture_offset5, png2->width, png2->height);
+	if (selection) {
+		mesh = quad5;
+		setTexture(textureUnit->index, texture_buffer5, texture_offset5, png2->width, png2->height);
 
-	rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_POS, 0, mesh->pos_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
-	rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_NORMAL, 0, mesh->nrm_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
-	rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_TEX0, 0, mesh->uv_off, sizeof(S3DVertex), 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+		rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_POS, 0, mesh->pos_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+		rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_NORMAL, 0, mesh->nrm_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
+		rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_TEX0, 0, mesh->uv_off, sizeof(S3DVertex), 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 
-	rsxLoadVertexProgram(context, vpo, vp_ucode);
-	rsxSetVertexProgramParameter(context, vpo, projMatrix, (float*)&tempMatrix);
+		rsxLoadVertexProgram(context, vpo, vp_ucode);
+		rsxSetVertexProgramParameter(context, vpo, projMatrix, (float*)&tempMatrix);
 
-	rsxLoadFragmentProgramLocation(context, fpo, fp_offset, GCM_LOCATION_RSX);
-	rsxAddressToOffset(&mesh->indices[0], &offset);
-	rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
-
+		rsxLoadFragmentProgramLocation(context, fpo, fp_offset, GCM_LOCATION_RSX);
+		rsxAddressToOffset(&mesh->indices[0], &offset);
+		rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
+	}
 	
 }
 
@@ -429,6 +431,8 @@ int main(int argc,const char *argv[])
 
 				if(paddata.BTN_CIRCLE)
 					goto done;
+				if(paddata.BTN_CROSS)
+					selection ^= 1;
 			}
 
 		}

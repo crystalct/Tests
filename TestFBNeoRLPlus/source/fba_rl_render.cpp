@@ -9,6 +9,8 @@
 // =======================================================================
 // TEXTURE / GRAPHICS  / RENDERING
 
+
+
 void c_fbaRL::ScaleLine(u32 *Target, u32 *Source, u32 SrcWidth, u32 TgtWidth) {
  //Thanks to: http://www.compuphase.com/graphic/scale.htm
 	int NumPixels1 = 0;
@@ -93,8 +95,10 @@ void c_tex::Render(u16 x, u16 y, u16 w, u16 h)
 
 }
 
+
 c_tex::c_tex(uint32_t _nTexture, uint32_t display)
 {
+    printf("Enter c_tex\n");
     png = NULL;
     pngSec = NULL;
     //Min = new Minimum;
@@ -106,6 +110,7 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
     uint32_t i = display * 7 + nTexture;
     //printf("Bind texture: %d\n", nTexture);
     bTextureOK = false;
+    u32 w, h, x, y;
 
     switch (i) {
     case 7:
@@ -131,13 +136,159 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
         //            pngLoadFromBuffer(PREVIEW_1280x720_PNG_bin, PREVIEW_1280x720_PNG_bin_size, png);
         //            break;
     }
+    
     texture = (u32*)rsxMemalign(128, (png->height * png->pitch));
 
     if (!texture) return;
     memcpy((void*)texture, (void*)png->bmp_out, png->height * png->pitch);
     SAFE_FREE(png->bmp_out);
     png->bmp_out = texture;
+    gcmAddressToOffset(texture, &pngBmpOffset);
+    printf("PngBmpOffset: %d\n", pngBmpOffset);
 
+    switch (nTexture) {
+        case TEX_MAIN_MENU:
+            nQuads = 9;
+            quad[0] = createQuad(Point3(-1.0, 0.6, 0), Point3(0.1, 1.0, 0), Point3(-1.0, 1.0, 0), Point3(0.1, 0.6, 0));
+            quad[1] = createQuad(Point3(0.1, 0.6, 0), Point3(1.0, 1.0, 0), Point3(0.1, 1.0, 0), Point3(1.0, 0.6, 0));
+            quad[2] = createQuad(Point3(-1.0, -0.3, 0), Point3(-0.9, 0.6, 0), Point3(-1.0, 0.6, 0), Point3(-0.9, -0.3, 0));
+            quad[3] = createQuad(Point3(-0.9, -0.3, 0), Point3(0.1, 0.6, 0), Point3(-0.9, 0.6, 0), Point3(0.1, -0.3, 0));
+            quad[4] = createQuad(Point3(0.1, -0.3, 0), Point3(1.0, 0.6, 0), Point3(0.1, 0.6, 0), Point3(1.0, -0.3, 0));
+            quad[5] = createQuad(Point3(-1.0, -1.0, 0), Point3(-0.9, -0.3, 0), Point3(-1.0, -0.3, 0), Point3(-0.9, -1.0, 0));
+            quad[6] = createQuad(Point3(-0.9, -0.6, 0), Point3(0.1, -0.3, 0), Point3(-0.9, -0.3, 0), Point3(0.1, -0.6, 0));
+            quad[7] = createQuad(Point3(-0.9, -1.0, 0), Point3(0.1, -0.6, 0), Point3(-0.9, -0.6, 0), Point3(0.1, -1.0, 0));
+            quad[8] = createQuad(Point3(0.1, -1.0, 0), Point3(1.0, -0.3, 0), Point3(0.1, -0.3, 0), Point3(1.0, -1.0, 0));
+
+            w = 1056; h = 216; x = 0; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[0] = texture;
+            gcmAddressToOffset(texture, &texture_offset[0]);
+            texture_dim[0].w = w;
+            texture_dim[0].h = h;
+
+            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[0], 0, 0, w, h, MAX_WIDTH, MAX_HEIGHT);
+            
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+               texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, 10, 4);
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+            
+            w = 864; h = 216; x = 1056; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[1] = texture;
+            gcmAddressToOffset(texture, &texture_offset[1]);
+            texture_dim[1].w = w;
+            texture_dim[1].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[1], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 96; h = 486; x = 0; y = 216;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[2] = texture;
+            gcmAddressToOffset(texture, &texture_offset[2]);
+            texture_dim[2].w = w;
+            texture_dim[2].h = h;
+
+            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[2], 0, 216, 96, 486, 1920, 1080);
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[2], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 960; h = 486; x = 96; y = 216;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[3] = texture;
+            gcmAddressToOffset(texture, &texture_offset[3]);
+            texture_dim[3].w = w;
+            texture_dim[3].h = h;
+
+            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[3], 96, 216, 960, 486, 1920, 1080);
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[3], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 864; h = 486; x = 1056; y = 216;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[4] = texture;
+            gcmAddressToOffset(texture, &texture_offset[4]);
+            texture_dim[4].w = w;
+            texture_dim[4].h = h;
+
+            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[4], 1056, 216, 864, 486, 1920, 1080);
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[4], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 96; h = 378; x = 0; y = 702;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[5] = texture;
+            gcmAddressToOffset(texture, &texture_offset[5]);
+            texture_dim[5].w = w;
+            texture_dim[5].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[5], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 960; h = 162; x = 96; y = 702;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[6] = texture;
+            gcmAddressToOffset(texture, &texture_offset[6]);
+            texture_dim[6].w = w;
+            texture_dim[6].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[6], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 960; h = 216; x = 96; y = 864;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[7] = texture;
+            gcmAddressToOffset(texture, &texture_offset[7]);
+            texture_dim[7].w = w;
+            texture_dim[7].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[7], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            w = 864; h = 378; x = 1056; y = 702;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[8] = texture;
+            gcmAddressToOffset(texture, &texture_offset[8]);
+            texture_dim[8].w = w;
+            texture_dim[8].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[8], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            break;
+
+        case SECTION_GAMELIST:
+            nQuads = 1;
+            quad[0] = createQuad(Point3(-0.4, -0.8, 0), Point3(1.0, 0.6, 0), Point3(-0.4, 0.6, 0), Point3(1.0, -0.8, 0));
+
+            w = 1328; h = 756; x = 592; y = 216;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[0] = texture;
+            gcmAddressToOffset(texture, &texture_offset[0]);
+            texture_dim[0].w = w;
+            texture_dim[0].h = h;
+
+            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[0], x, y, w, h, MAX_WIDTH, MAX_HEIGHT);
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, 10, 4);
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+    }
+
+    
     bTextureOK = true;
 
 

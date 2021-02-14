@@ -9,6 +9,7 @@
 #include <sysutil/video.h>
 
 #include "rsxutil.h"
+#include "mesh.h"
 
 videoResolution vResolution;
 
@@ -24,6 +25,9 @@ void *depth_buffer;
 u32 color_pitch;
 u32 color_offset[FRAME_BUFFER_COUNT];
 void *color_buffer[FRAME_BUFFER_COUNT];
+
+void *state_buffer;
+u32 state_offset;
 
 f32 aspect_ratio;
 
@@ -222,17 +226,49 @@ void setRenderTarget(u32 index)
 	rsxSetSurface(gGcmContext,&surface);
 }
 
-void initScreen()
+void initDefaultStateCommands()
+{
+    rsxSetCurrentBuffer(nullptr, (u32*)state_buffer, HOST_STATE_CB_SIZE);
+    {
+        rsxSetBlendEnable(gGcmContext, GCM_FALSE);
+        rsxSetBlendFunc(gGcmContext, GCM_ONE, GCM_ZERO, GCM_ONE, GCM_ZERO);
+        rsxSetBlendEquation(gGcmContext, GCM_FUNC_ADD, GCM_FUNC_ADD);
+        rsxSetDepthWriteEnable(gGcmContext, GCM_TRUE);
+        rsxSetDepthFunc(gGcmContext, GCM_LESS);
+        rsxSetDepthTestEnable(gGcmContext, GCM_TRUE);
+        rsxSetClearDepthStencil(gGcmContext,0xffffff00);
+  	    rsxSetShadeModel(gGcmContext,GCM_SHADE_MODEL_SMOOTH);
+        rsxSetFrontFace(gGcmContext, GCM_FRONTFACE_CCW);
+        rsxSetClearReport(gGcmContext, GCM_ZPASS_PIXEL_CNT);
+        rsxSetZControl(gGcmContext, GCM_TRUE, GCM_FALSE, GCM_FALSE);
+        rsxSetZCullControl(gGcmContext, GCM_ZCULL_LESS, GCM_ZCULL_LONES);
+        rsxSetSCullControl(gGcmContext, GCM_SCULL_SFUNC_LESS, 1, 0xff);
+        rsxSetColorMaskMrt(gGcmContext, 0);
+    	rsxSetColorMask(gGcmContext,GCM_COLOR_MASK_B |
+							GCM_COLOR_MASK_G |
+							GCM_COLOR_MASK_R |
+							GCM_COLOR_MASK_A);
+        rsxSetReturnCommand(gGcmContext);
+    }
+    rsxSetDefaultCommandBuffer(nullptr);
+}
+
+void initScreen(u32 hostBufferSize)
 {
     u32 zs_depth = 4;
     u32 color_depth = 4;
-    u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_SIZE));
+    u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_STATE_CB_SIZE + hostBufferSize));
 
     gcmInitDefaultFifoMode(GCM_DEFAULT_FIFO_MODE_CONDITIONAL);
 
     void *hostAddr = memalign(HOST_ADDR_ALIGNMENT, bufferSize);
     rsxInit(nullptr, DEFAULT_CB_SIZE, bufferSize, hostAddr);
 
+    state_buffer = (void*)((intptr_t)hostAddr + DEFAULT_CB_SIZE);
+    rsxAddressToOffset(state_buffer, &state_offset);
+    printf("state_cmd: %p [%08x]\n", state_buffer, state_offset);
+
+    initDefaultStateCommands();
     initVideoConfiguration();
 
     waitRSXIdle();
@@ -307,4 +343,33 @@ void finish()
     u32 lastBuffer = (data >> 8);
     while (lastBuffer != fbOnDisplay)
         usleep(100);
+}
+
+SMeshBuffer* createQuad(Point3 P1, Point3 P2, Point3 P3, Point3 P4)
+{
+    u32 i;
+    SColor col(255, 255, 255, 255);
+    SMeshBuffer* buffer = new SMeshBuffer();
+    const u16 u[6] = { 0,1,2,   0,3,1 };
+
+    buffer->indices.set_used(6);
+
+    for (i = 0; i < 6; i++) buffer->indices[i] = u[i];
+
+    buffer->vertices.set_used(4);
+
+    //                              position, normal,    texture
+    buffer->vertices[0] = S3DVertex(P1.getX(), P1.getY(), P1.getZ(), -1, -1, -1, col, 0, 1);
+    buffer->vertices[1] = S3DVertex(P2.getX(), P2.getY(), P2.getZ(), 1, -1, -1, col, 1, 0);
+    buffer->vertices[2] = S3DVertex(P3.getX(), P3.getY(), P3.getZ(), 1, 1, -1, col, 0, 0);
+    buffer->vertices[3] = S3DVertex(P4.getX(), P4.getY(), P4.getZ(), -1, 1, -1, col, 1, 1);
+
+
+    rsxAddressToOffset(&buffer->vertices[0].pos, &buffer->pos_off);
+    rsxAddressToOffset(&buffer->vertices[0].nrm, &buffer->nrm_off);
+    rsxAddressToOffset(&buffer->vertices[0].col, &buffer->col_off);
+    rsxAddressToOffset(&buffer->vertices[0].u, &buffer->uv_off);
+    rsxAddressToOffset(&buffer->indices[0], &buffer->ind_off);
+
+    return buffer;
 }

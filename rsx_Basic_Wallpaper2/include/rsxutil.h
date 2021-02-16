@@ -4,8 +4,6 @@
 #include <ppu-types.h>
 #include <rsx/rsx.h>
 
-#include <debugfont.h>
-
 
 #define DEFUALT_CB_SIZE						0x80000		// 512Kb default command buffer size
 #define HOST_STATE_CB_SIZE					0x10000		// 64Kb state command buffer size (used for resetting certain default states)

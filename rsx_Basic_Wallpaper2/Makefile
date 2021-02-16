@@ -17,10 +17,10 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source ../debugfont_renderer/source
-DATA		:=	data
-SHADERS		:=	shaders ../debugfont_renderer/shaders
-INCLUDES	:=	include ../debugfont_renderer/include
+SOURCES		:=	source ../easyttfont_renderer/source
+DATA		:=	data ../easyttfont_renderer/data
+SHADERS		:=	shaders ../easyttfont_renderer/shaders
+INCLUDES	:=	include ../easyttfont_renderer/include
 
 TITLE		:=	RSX Test - PSL1GHT
 APPID		:=	RSX00003
@@ -117,7 +117,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).self
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).self $(OUTPUT).fake.self
 
 #---------------------------------------------------------------------------------
 run:

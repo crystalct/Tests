@@ -7,7 +7,6 @@
 
 #include <sysutil/video.h>
 
-#include <rsxdebugfontrenderer.h>
 #include "rsxutil.h"
 
 #define GCM_LABEL_INDEX		255
@@ -43,7 +42,7 @@ static u32 sLabelVal = 1;
 
 extern void dbg_printf(const char *fmt,...);
 
-static RSXDebugFontRenderer* debugFontRenderer;
+//static RSXEasyTTFontRenderer* easyTTFontRenderer;
 
 static void waitFinish()
 {
@@ -181,7 +180,7 @@ void init_screen(void *host_addr,u32 size)
 	depth_buffer = (u32*)rsxMemalign(64,(display_height*depth_pitch)*2);
 	rsxAddressToOffset(depth_buffer,&depth_offset);
 
-	debugFontRenderer = new RSXDebugFontRenderer(context);
+	//easyTTFontRenderer = new RSXEasyTTFontRenderer(context);
 }
 
 void waitflip()

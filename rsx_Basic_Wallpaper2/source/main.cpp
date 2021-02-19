@@ -250,7 +250,14 @@ void drawFrame()
 
 	Matrix4 tempMatrix = transpose(Matrix4::identity());
 	
+	SColor col(255, 255, 255, 255);
 	mesh = quad;
+	//Point3(0.0, 0.0, 0), Point3(0.05, 0.06667, 0), Point3(0.0, 0.06667, 0), Point3(0.05, 0.0, 0)
+	//mesh->vertices[0] = S3DVertex(0.0, 0.0, 0, -1, -1, -1, col, 0, 1);
+	mesh->vertices[0].pos = Vector3(0.0, 0.0, 0.0);
+	mesh->vertices[1].pos = Vector3(0.05, 0.06667, 0.0);
+	mesh->vertices[2].pos = Vector3(0.0, 0.06667, 0.0);
+	mesh->vertices[3].pos = Vector3(0.05, 0.0, 0.0);
 	setTexture(textureUnit->index);
 
 	rsxBindVertexArrayAttrib(context, GCM_VERTEX_ATTRIB_POS, 0, mesh->pos_off, sizeof(S3DVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
@@ -264,7 +271,7 @@ void drawFrame()
 	rsxLoadFragmentProgramLocation(context, fpo, fp_offset, GCM_LOCATION_RSX);
 	rsxAddressToOffset(&mesh->indices[0], &offset);
 	rsxDrawIndexArray(context, GCM_TYPE_TRIANGLES, mesh->ind_off, mesh->getIndexCount(), GCM_INDEX_TYPE_32B, GCM_LOCATION_RSX);
-
+	
 	/*mesh = quad2;
 	u32 app;
 
@@ -324,7 +331,7 @@ int main(int argc,const char *argv[])
 	pngLoadFromBuffer(wall1_png_bin, wall1_png_bin_size, png);
 
 	//Create quad
-	quad = createQuad(Point3(0.0, 0.0, 0), Point3(0.05, 0.06667, 0), Point3(0.0, 0.06667, 0), Point3(0.05, 0.0, 0));
+	quad = createQuad(Point3(0.0, 0.0, 0), Point3(1.0, 1.0, 0), Point3(0.0, 1.0, 0), Point3(1.0, 0.0, 0));
 	quad2 = createQuad(Point3(0.0, 0.0, 0), Point3(0.05, 0.06667, 0), Point3(0.0, 0.06667, 0), Point3(0.05, 0.0, 0));
 
 

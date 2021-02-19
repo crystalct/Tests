@@ -118,8 +118,10 @@ int c_fbaRL::ParseGameListCache()
                 fba_drv = (FBA_DRV *)drvmap->data[i].data;
                 games[row] = new c_game(row);
                 //1//snprintf(games[row]->title, 256, "%s", fba_drv->szTitle);
-                snprintf(games[row]->name, 128, "%s", fba_drv->szName);		// title
-                snprintf(games[row]->sysmask, 32, "%s", fba_drv->szSystemFilter);	// sys filter
+                strcpy(games[row]->name, fba_drv->szName);
+                //snprintf(games[row]->name, 128, "%s", fba_drv->szName);		// title
+                strcpy(games[row]->sysmask, fba_drv->szSystemFilter);
+                //snprintf(games[row]->sysmask, 32, "%s", fba_drv->szSystemFilter);	// sys filter
                 snprintf(games[row]->company, 96, "%s", fba_drv->szCompany);	// sys filter
                 snprintf(games[row]->year, 5, "%s", fba_drv->szYear);	// sys filter
                 snprintf(games[row]->system, 32, "%s", fba_drv->szSystem);	// sys filter

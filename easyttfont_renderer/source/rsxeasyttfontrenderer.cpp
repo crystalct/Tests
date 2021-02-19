@@ -3,8 +3,8 @@
 
 #include "unbatang_ttf_bin.h"
 
-#include "vpshader_dbgfont_vpo.h"
-#include "fpshader_dbgfont_fpo.h"
+#include "vpshader_easyttfont_vpo.h"
+#include "fpshader_easyttfont_fpo.h"
 
 u8* RSXEasyTTFontRenderer::spTextureData;
 
@@ -58,8 +58,8 @@ RSXEasyTTFontRenderer::~RSXEasyTTFontRenderer()
 
 void RSXEasyTTFontRenderer::initShader()
 {
-	mRSXVertexProgram = (rsxVertexProgram*)vpshader_dbgfont_vpo;
-	mRSXFragmentProgram = (rsxFragmentProgram*)fpshader_dbgfont_fpo;
+	mRSXVertexProgram = (rsxVertexProgram*)vpshader_easyttfont_vpo;
+	mRSXFragmentProgram = (rsxFragmentProgram*)fpshader_easyttfont_fpo;
 
 	void *ucode;
 	u32 ucodeSize;

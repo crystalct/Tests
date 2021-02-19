@@ -45,7 +45,7 @@ static u32 sResolutionIds[] = {
     VIDEO_RESOLUTION_1600x1080,
     VIDEO_RESOLUTION_1440x1080,
     VIDEO_RESOLUTION_1280x1080,
-    VIDEO_RESOLUTION_960x1080,
+    VIDEO_RESOLUTION_1080,
     VIDEO_RESOLUTION_720,
     VIDEO_RESOLUTION_480,
     VIDEO_RESOLUTION_576
@@ -255,6 +255,7 @@ void initDefaultStateCommands()
 
 void initScreen(u32 hostBufferSize)
 {
+    printf("hostBufferSize: %d\n", hostBufferSize);
     u32 zs_depth = 4;
     u32 color_depth = 4;
     u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_STATE_CB_SIZE + hostBufferSize));
@@ -289,7 +290,7 @@ void initScreen(u32 hostBufferSize)
        gcmSetDisplayBuffer(i, color_offset[i], color_pitch, display_width, display_height);
        gcmSetTileInfo(tileIndex, GCM_LOCATION_RSX, color_offset[i], bufferSize, color_pitch, GCM_COMPMODE_DISABLED, 0, 0);
        gcmBindTile(tileIndex);
-       printf("fb[%d]: %p (%08x) [%dx%d] %d\n", i, color_buffer[i], color_offset[i], display_width, display_height, color_pitch);
+       printf("FB[%d]: %p (%08x) [%dx%d] %d\n", i, color_buffer[i], color_offset[i], display_width, display_height, color_pitch);
     }
 
     bufferSize = rsxAlign(GCM_TILE_ALIGN_OFFSET, depthBufferSize);

@@ -11,6 +11,9 @@
 #include <setjmp.h>
 #include <ppu-asm.h>
 #include <ppu-types.h>
+#include <ft2build.h>
+#include <freetype/freetype.h> 
+#include <freetype/ftglyph.h>
 
 #define EASYTTFONT_TEXTURE_WIDTH			128
 #define EASYTTFONT_TEXTURE_HEIGHT			128
@@ -133,6 +136,9 @@ private:
 
 	static u32 r_use;
 	static s32 ttf_inited;
+	static FT_Library freetype;
+	static FT_Face face;
+	static int f_face;
 	static ttf_dyn ttf_font_datas[MAX_CHARS];
 	static s32 sXPos;
 	static s32 sYPos;

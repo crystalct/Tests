@@ -268,10 +268,22 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             break;
 
         case SECTION_GAMELIST:
-            nQuads = 1;
-            quad[0] = createQuad(Point3(-0.4, -0.8, 0), Point3(1.0, 0.6, 0), Point3(-0.4, 0.6, 0), Point3(1.0, -0.8, 0));
+            nQuads = 6;
+            
+            quad[0] = createQuad(Point3(-0.9802, -0.6, 0), Point3(-0.4063, 0.2519, 0), Point3(-0.9802, 0.2519, 0), Point3(-0.4063, -0.6, 0));
+            quad[1] = createQuad(Point3(-0.9802, 0.3, 0), Point3(-0.4063, 0.9630, 0), Point3(-0.9802, 0.9630, 0), Point3(-0.4063, 0.3, 0));
+            quad[2] = createQuad(Point3(-1.0, 0.0, 0), Point3(0.0, 1.0, 0), Point3(-1.0, 1.0, 0), Point3(0.0, 0.0, 0));
+            quad[3] = createQuad(Point3(0.0, 0.0, 0), Point3(1.0, 1.0, 0), Point3(0.0, 1.0, 0), Point3(1.0, 0.0, 0));
+            quad[4] = createQuad(Point3(-1.0, -1.0, 0), Point3(0.0, 0.0, 0), Point3(-1.0, 0.0, 0), Point3(0.0, -1.0, 0));
+            quad[5] = createQuad(Point3(0.0, -1.0, 0), Point3(1.0, 0.0, 0),  Point3(0.0, 0.0, 0), Point3(1.0, -1.0, 0));
+            
+            //memcpy(app.textures[SECTION_GAMELIST]->texture_buffer[0], app.textures[TEX_PREVIEW]->png->bmp_out, app.textures[TEX_PREVIEW]->png->pitch * app.textures[TEX_PREVIEW]->png->height);
+            /*rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                app.textures[TEX_PREVIEW]->texture_offset[0], 551 * 4, 0, 0,
+                app.textures[TEX_PREVIEW]->pngBmpOffset, app.textures[TEX_PREVIEW]->png->pitch, 0, 0,
+                app.textures[TEX_PREVIEW]->png->width, app.textures[TEX_PREVIEW]->png->height, 4);*/
 
-            w = 1328; h = 756; x = 592; y = 216;
+            /*w = app.textures[TEX_PREVIEW]->png->width; h = app.textures[TEX_PREVIEW]->png->height; x = 0; y = 0;
             texture = (u32*)rsxMemalign(128, w * h * 4);
             if (!texture) exit(0);
             texture_buffer[0] = texture;
@@ -279,12 +291,57 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             texture_dim[0].w = w;
             texture_dim[0].h = h;
 
-            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[0], x, y, w, h, MAX_WIDTH, MAX_HEIGHT);
+            memcpy(texture_buffer[0], app.textures[TEX_PREVIEW]->png->bmp_out, app.textures[TEX_PREVIEW]->png->pitch * app.textures[TEX_PREVIEW]->png->height);*/
+
+
+            w = 960; h = 540; x = 0; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[2] = texture;
+            gcmAddressToOffset(texture, &texture_offset[2]);
+            texture_dim[2].w = w;
+            texture_dim[2].h = h;
 
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
-                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, 10, 4);
+                texture_offset[2], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            w = 960; h = 540; x = 960; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[3] = texture;
+            gcmAddressToOffset(texture, &texture_offset[3]);
+            texture_dim[3].w = w;
+            texture_dim[3].h = h;
+
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
-                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+                texture_offset[3], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            w = 960; h = 540; x = 0; y = 540;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[4] = texture;
+            gcmAddressToOffset(texture, &texture_offset[4]);
+            texture_dim[4].w = w;
+            texture_dim[4].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[4], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            w = 960; h = 540; x = 960; y = 540;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[5] = texture;
+            gcmAddressToOffset(texture, &texture_offset[5]);
+            texture_dim[5].w = w;
+            texture_dim[5].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[5], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            
 
     }
 
@@ -297,8 +354,9 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
 
 int c_tex::BindTexture(char* pszPath)
 {
-	bTextureOK = false;
-    pngData *pngTmp = new pngData;
+    bTextureOK = false;
+    //pngData *pngTmp = new pngData;
+    u32* texture;
 
     if (fileExist(pszPath))
     {
@@ -310,9 +368,50 @@ int c_tex::BindTexture(char* pszPath)
         }
         png = new pngData;
         
-        pngLoadFromFile(pszPath, pngTmp);
+
+        pngLoadFromFile(pszPath, png);
+        if (png->pitch <= 0 ) {
+            printf("Load png error\n");
+            return 0;
+        }
+        if (app.textures[TEX_GAME_LIST]->texture_buffer[0])
+        {
+            rsxFree(app.textures[TEX_GAME_LIST]->texture_buffer[0]);
+            app.textures[TEX_GAME_LIST]->texture_buffer[0] = NULL;
+        }
         
-        u32 out_w, out_h;
+        //adjust aspect ratio of preview image
+        if (png->width < png->height) {
+            app.textures[TEX_GAME_LIST]->quad[0]->vertices[0].pos = Vector3(-0.9802 + ((553.0 - (462.0 * png->width / png->height)) / 1920), -0.6, 0.0);
+            app.textures[TEX_GAME_LIST]->quad[0]->vertices[1].pos = Vector3(-0.4063 - ((553.0 - (462.0 * png->width / png->height)) / 1920), 0.2519, 0.0);
+            app.textures[TEX_GAME_LIST]->quad[0]->vertices[2].pos = Vector3(-0.9802 + ((553.0 - (462.0 * png->width / png->height)) / 1920), 0.2519, 0.0);
+            app.textures[TEX_GAME_LIST]->quad[0]->vertices[3].pos = Vector3(-0.4063 - ((553.0 - (462.0 * png->width / png->height)) / 1920), -0.6, 0.0);
+        }
+        else
+        {
+            if ((float)553.0 * ((float)png->height / (float)png->width) > 462.0f) {
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[0].pos = Vector3(-0.9802, -0.600, 0.0);
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[1].pos = Vector3(-0.4063, 0.2519, 0.0);
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[2].pos = Vector3(-0.9802, 0.2519, 0.0);
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[3].pos = Vector3(-0.4063, -0.600, 0.0);
+            }
+            else {
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[0].pos = Vector3(-0.9802, -0.600 + ((462.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[1].pos = Vector3(-0.4063, 0.2519 - ((462.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[2].pos = Vector3(-0.9802, 0.2519 - ((462.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_GAME_LIST]->quad[0]->vertices[3].pos = Vector3(-0.4063, -0.600 + ((462.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+            }
+        }
+        texture = (u32*)rsxMemalign(128, png->width * png->height * 4);
+        if (!texture) exit(0);
+        app.textures[TEX_GAME_LIST]->texture_buffer[0] = texture;
+        gcmAddressToOffset(texture, &(app.textures[TEX_GAME_LIST]->texture_offset[0]));
+        app.textures[TEX_GAME_LIST]->texture_dim[0].w = png->width;
+        app.textures[TEX_GAME_LIST]->texture_dim[0].h = png->height;
+        memcpy(app.textures[TEX_GAME_LIST]->texture_buffer[0], png->bmp_out, png->pitch * png->height);
+       
+        return 1;
+        /*u32 out_w, out_h;
         if (pngTmp->width < pngTmp->height) {
             out_h = 460.0f ;
             out_w = round((float)out_h * ((float)pngTmp->width / (float)pngTmp->height));
@@ -354,7 +453,7 @@ int c_tex::BindTexture(char* pszPath)
             printf("Memory error png resize\n");
             return 0;
 
-        }
+        }*/
  
     }
  
@@ -363,10 +462,13 @@ int c_tex::BindTexture(char* pszPath)
 
 int c_tex::BindSecTexture(char* pszPath)
 {
-	//printf("Bind Sec texture: %d - %s\n", nTexture, pszPath);
-	pngData *pngTmp = new pngData;
+	//pngData *pngTmp = new pngData;
 	bTextureOK = false;
+    u32* texture;
 	//pngSec = new pngData;
+
+    if (fileExist(pszPath))
+    {
 
         if (pngSec != NULL) {
             if(pngSec->bmp_out != NULL) {
@@ -378,8 +480,66 @@ int c_tex::BindSecTexture(char* pszPath)
         }
         pngSec = new pngData;
 
-        pngLoadFromFile(pszPath, pngTmp);
-		if(pngTmp->width <= 0)
+        pngLoadFromFile(pszPath, pngSec);
+        if (pngSec->pitch <= 0) {
+            printf("Load pngSec error\n");
+            return 0;
+        }
+        if (app.textures[TEX_GAME_LIST]->texture_buffer[1])
+        {
+            rsxFree(app.textures[TEX_GAME_LIST]->texture_buffer[1]);
+            app.textures[TEX_GAME_LIST]->texture_buffer[1] = NULL;
+        }
+
+        //adjust aspect ratio of title image
+        //if (pngSec->width < pngSec->height) {
+        //    //quad[1] = createQuad(Point3(-0.9802, 0.3, 0), Point3(-0.4063, 0.9630, 0), Point3(-0.9802, 0.9630, 0), Point3(-0.4063, 0.3, 0));
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[0].pos = Vector3(-0.9802 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.3, 0.0);
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.9630, 0.0);
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.9630, 0.0);
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.3, 0.0);
+        //}
+        //else
+        //{
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[0].pos = Vector3(-0.9802, 0.3000 + ((360.0 - (553.0 * pngSec->height / pngSec->width)) / 1080), 0.0);
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063, 0.9630 - ((360.0 - (553.0 * pngSec->height / pngSec->width)) / 1080), 0.0);
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802, 0.9630 - ((360.0 - (553.0 * pngSec->height / pngSec->width)) / 1080), 0.0);
+        //    app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063, 0.3000 + ((360.0 - (553.0 * pngSec->height / pngSec->width)) / 1080), 0.0);
+        //}
+
+        //adjust aspect ratio of title image
+        if (png->width < png->height) {
+            app.textures[TEX_GAME_LIST]->quad[1]->vertices[0].pos = Vector3(-0.9802 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.3000, 0.0);
+            app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.9630, 0.0);
+            app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.9630, 0.0);
+            app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.3000, 0.0);
+        }
+        else
+        {
+            if ((float)553.0 * ((float)png->height / (float)png->width) > 360.0f) {
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[0].pos = Vector3(-0.9802, 0.3000, 0.0);
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063, 0.9630, 0.0);
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802, 0.9630, 0.0);
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063, 0.3000, 0.0);
+            }
+            else {
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[0].pos = Vector3(-0.9802, 0.3000 + ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063, 0.9630 - ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802, 0.9630 - ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063, 0.3000 + ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+            }
+        }
+
+        texture = (u32*)rsxMemalign(128, pngSec->width * pngSec->height * 4);
+        if (!texture) exit(0);
+        app.textures[TEX_GAME_LIST]->texture_buffer[1] = texture;
+        gcmAddressToOffset(texture, &(app.textures[TEX_GAME_LIST]->texture_offset[1]));
+        app.textures[TEX_GAME_LIST]->texture_dim[1].w = pngSec->width;
+        app.textures[TEX_GAME_LIST]->texture_dim[1].h = pngSec->height;
+        memcpy(app.textures[TEX_GAME_LIST]->texture_buffer[1], pngSec->bmp_out, pngSec->pitch * pngSec->height);
+		
+        return 1;
+        /*if(pngTmp->width <= 0)
 		{
 			return 0;
 		} else {
@@ -425,11 +585,12 @@ int c_tex::BindSecTexture(char* pszPath)
                 printf("Memory error png resize\n");
                 return 0;
 
-            }
+            }*/
 
 
-		}
-		return 0;
+	}
+	
+    return 0;
 }
 
 

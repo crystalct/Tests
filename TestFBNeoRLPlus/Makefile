@@ -17,10 +17,10 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/ftp
-DATA		:=	data
-SHADERS		:=	shaders
-INCLUDES	:=	include
+SOURCES		:=	source source/ftp source/easyttfont_renderer
+DATA		:=	data data/easyttfont_renderer
+SHADERS		:=	shaders shaders/easyttfont_renderer
+INCLUDES	:=	include include/easyttfont_renderer
 
 TITLE		:=	RSX Test - PSL1GHT
 APPID		:=	RSX00003
@@ -40,7 +40,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 LIBS	:=	-lsimdmath -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -lm -lsysmodule -lpngdec \
 			-lps3sqlite -lsysfs -lspu_sound -laudio -lspu_soundmodule -laudioplayer \
-			-lmpg123 -logg -lnet -lnetctl -lzip -lz
+			-lfreetype -lmpg123 -logg -lnet -lnetctl -lzip -lz
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -100,7 +100,7 @@ export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 export INCLUDE	:=	$(foreach dir,$(INCLUDES), -I$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					$(LIBPSL1GHT_INC) -I$(PORTLIBS)/include/ -I$(PORTLIBS)/modules \
-					-I$(PORTLIBS)/modules/include -I$(CURDIR)/$(BUILD) 
+					-I$(PORTLIBS)/modules/include -I$(CURDIR)/$(BUILD) -I$(PORTLIBS)/include/freetype2
 
 #---------------------------------------------------------------------------------
 # build a list of library paths

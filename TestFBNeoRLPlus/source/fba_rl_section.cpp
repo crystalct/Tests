@@ -3,12 +3,14 @@
 
 #include <unistd.h>
 #include "capp.h"
-#include "fnt_print.h"
+//#include "fnt_print.h"
 #include <rsx/rsx.h>
 #include <ppu-lv2.h>
 #include <lv2/memory.h>
 #include "rsxutil.h"
+#include "easyttfont.h"
 
+extern smeminfo meminfo;
 
 #define COLOR_WHITE		0xFFFFFF
 #define COLOR_BLACK		0x000000
@@ -22,7 +24,15 @@
 #define NSHADOWCOLOR	0xFF050505
 #define NSHADOWXYPOS2   0.00150f
 
-#define NGAMELISTMAX    33
+//COLORS R,G,B,A
+//#define SHADOWCOLOR		0.2f, 0.2f, 0.2f, 1.0f
+#define SHADOWCOLOR		0.094f, 0.522f, 0.925f, 1.0f
+#define YELLOWCOLOR		1.0f, 1.0f, 0.0f, 1.0f
+#define WHITECOLOR		1.0f, 1.0f, 1.0f, 1.0f
+#define LIGHTBLUECOLOR  0.0f, 0.8f, 1.0f, 1.8f
+#define REDCOLOR		1.0f, 0.0f, 0.0f, 1.0f
+
+#define NGAMELISTMAX    25
 #define DRVMAP          ((hashmap_map *) app.drvMap)
 #define GAMESMAP        ((hashmap_map *) app.gamesMap)
 #define PNG_SRC         (app.textures[TEX_GAME_LIST]->png)
@@ -30,16 +40,12 @@
 #define FBAGAMES        ((FBA_GAMES *)GAMESMAP->data[hashmap_position].data)
 
 
-extern fnt_t fontM,fontL;
+//extern fnt_t fontM,fontL;
 extern u32* texture_buffer;
 extern u32 texture_offset;
 extern u32 myLabelValue;
 extern vu32* mLabel;
 
-extern "C" {
-	inline void memcpy16(void* dst, const void* src, size_t n);
-	
-}
 
 //static float nShadowXYpos		= 0.00250f;
 //static float nShadowXYpos2		= 0.00200f;
@@ -58,13 +64,9 @@ static float yPos;
 static float yPosDiff;
 static uint32_t fontSize;
 static int error_x, error_y;
-static u16 X,Y;
 
-struct smeminfo {
-            uint32_t total;
-            uint32_t avail;
-} meminfo;
-static char txt[256];
+
+static char txt[288];
 extern char ipaddress[32];
 
 void c_fbaRL::DisplayFrame()
@@ -105,95 +107,49 @@ void c_fbaRL::MainMenu_Frame()
 	xPos		= 0.2600f;
 	yPos		= 0.5885f;
 	yPosDiff	= 0.0400f;
-	//float nfontLize = 1.0500f; // big text
-	nColor = nTextColor;
-	pngData* png_src;
-
-    //if (app.state.displayMode.resolution == 1)
-        fontSize = 2;
-    //else
-      //  fontSize = 1;
-    //rsxBuffer *buf;
-    //rsxbuffer = &(app.buffers[app.currentBuffer]);
-    //rsxBuffer *buffer = &buffers[currentBuffer];
-	//png_src = app.textures[TEX_MAIN_MENU]->png;
-	//w = 960; h = 486; x = 96; y = 216;
-	/*rsxFlushBuffer(gGcmContext);
-	rsxSetWaitForIdle(gGcmContext);*/
 	
-	//memset((void*)app.textures[TEX_MAIN_MENU]->texture_buffer[3], 0, 960 * 486 * 4);
-	//getsubimage((u32*)app.textures[TEX_MAIN_MENU]->png, app.textures[TEX_MAIN_MENU]->texture_buffer[3], 
-		//96, 216, 960, 486, 1920, 1080);
-	
-	rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
-		app.textures[TEX_MAIN_MENU]->texture_offset[3], 960 * 4, 0, 0, 
-		app.textures[TEX_MAIN_MENU]->pngBmpOffset, PITCH, 96, 216, 960, 486, 4);
-	
-	//rsxFlushBuffer(gGcmContext);
-	//rsxSetWaitForIdle(gGcmContext);
-	//usleep(5000);*/
-	//rsxSetWaitForIdle(gGcmContext);
-	//rsxSetTransferData(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
-		//texture_offset, png_src->width * 4, app.textures[TEX_MAIN_MENU]->pngBmpOffset, png_src->width * 4, png_src->width * 4, png_src->height);
-	//rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL, 
-		//texture_offset, PITCH, 100, 100, app.textures[TEX_MAIN_MENU]->pngBmpOffset, PITCH, 0, 0, 800, 600, 4);
-
-	//rsxSetWaitForIdle(gGcmContext);
-	//rsxFlushBuffer(gGcmContext);
-	//rsxSetWaitForIdle(gGcmContext);
-	
-	//memcpy(texture_buffer, png_src->bmp_out, png_src->width * png_src->height * sizeof(uint32_t));
-	//memcpy16((void *)texture_buffer, (const void *)png_src->bmp_out, (size_t) png_src->width * png_src->height * sizeof(uint32_t));
-	////if(nFrameStep == 0) { yPos += nShadowXYpos2; xPos += nShadowXYpos2; }
-	////if(nFrameStep == 0) { nColor = nShadowColor; } // Shadow color
-
+	EasyTTFont::setDimension(15, 16);
+	if (nFrameStep == 0) 
+	{
+			EasyTTFont::setColor(SHADOWCOLOR);
+			EasyTTFont::setPosition((int)(0.229 * display_width) + 1, (int)(0.135 * display_height) + 1);
+	}
+	else
+	{
+			EasyTTFont::setColor(WHITECOLOR);
+			EasyTTFont::setPosition((int)(0.229 * display_width), (int)(0.135 * display_height));
+	}
 
 	snprintf(txt,sizeof(txt),"ver: %s (ip: %s)", _APP_VER, ipaddress);
-	////cellDbgFontPrintf(xPos + 0.0300f + (0.0600f * 2), yPos + 0.0100f + (yPosDiff * 2), nSmallSize, nColor, "ver: "_APP_VER" (ip: %s)", ipaddress);
-	//rsxFlushBuffer(gGcmContext);
-	//rsxSetWaitForIdle(gGcmContext);
-	fnt_print_vram(&fontM, (u32*)app.textures[TEX_MAIN_MENU]->texture_buffer[0],
-		app.textures[TEX_MAIN_MENU]->texture_dim[0].w,
-		(int)((xPos + 0.0200f + (0.0600f * 2)) * app.textures[TEX_MAIN_MENU]->texture_dim[0].w),
-		(int)((yPos + 0.0100f + (yPosDiff * 2)) * app.textures[TEX_MAIN_MENU]->texture_dim[0].h),
-		txt, nColor, 0x00000000, fontSize, fontSize);
-	//if(nFrameStep == 0) { yPos -= nShadowXYpos2; xPos -= nShadowXYpos2; } // reset shadow xy pos
-	//if(nFrameStep == 0) { yPos += nShadowXYpos; xPos += nShadowXYpos; }
-
-	yPos = 0.0185f;
-	xPos = 0.0400f;
-	yPosDiff = 0.1770f;
-
-	////int nMenuItem = main_menu->UpdateTopItem();
+	EasyTTFont::print(txt);
+	
+	yPos = 0.2000f;
+	xPos = 0.0600f;
+	yPosDiff = 0.0804f;
+	
 	int nMenuItem = 0;
-
-	////while(nMenuItem <= (main_menu->nTopItem + main_menu->nListMax))
+	
+	EasyTTFont::setDimension(22, 26);
 	while(nMenuItem < main_menu->nTotalItem)
 	{
-		////if(nMenuItem == main_menu->nTotalItem) break;
-
-		// normal
-		nColor = nTextColor;
-
-		// selected
-		if(nMenuItem == main_menu->nSelectedItem) {
-			nColor = COLOR_YELLOW;
+		if (nFrameStep == 0) {
+			EasyTTFont::setColor(SHADOWCOLOR);
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			if (nMenuItem == main_menu->nSelectedItem) {  // selected
+				EasyTTFont::setColor(YELLOWCOLOR);
+			}
+			else
+			{
+				EasyTTFont::setColor(WHITECOLOR);
+			}
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(int)(yPos * display_height));
 		}
 
-		////if(nFrameStep == 0) { nColor = nShadowColor; } // Shadow color
-
-		////cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "%s", main_menu->item[nMenuItem]->szMenuLabel);
-
-		fnt_print_vram(&fontL, (u32*)app.textures[TEX_MAIN_MENU]->texture_buffer[3], 
-			app.textures[TEX_MAIN_MENU]->texture_dim[3].w, 
-			(int)(xPos * app.textures[TEX_MAIN_MENU]->texture_dim[3].w),
-            (int)(yPos * app.textures[TEX_MAIN_MENU]->texture_dim[3].h),
-            main_menu->item[nMenuItem]->szMenuLabel, nColor, 0x00000000, 1, 1);
-		/*fnt_print_vram(&font, (u32 *)app.textures[TEX_MAIN_MENU]->_texture.pixels,
-					app.textures[TEX_MAIN_MENU]->_texture.width,
-					(int)(xPos * app.textures[TEX_MAIN_MENU]->_texture.width),
-					(int)(yPos * app.textures[TEX_MAIN_MENU]->_texture.height),
-					main_menu->item[nMenuItem]->szMenuLabel, nColor, 0x00000000, 1, 1);		*/
+		EasyTTFont::print(main_menu->item[nMenuItem]->szMenuLabel);
+		
 		yPos += yPosDiff;
 
 		nMenuItem++;
@@ -205,29 +161,21 @@ void c_fbaRL::GameList_Frame()
 {
 
 
-	xPos		= 0.3273f;
-	yPos		= 0.2042f;
-	yPosDiff	= 0.0283f;
+	xPos = 0.3260;
+	yPos = 0.2010;
+	yPosDiff	= 0.0267f;
 
    /* if (app.state.displayMode.resolution == 1)
         fontSize = 2;
     else*/
-        fontSize = 2;
+        
+	EasyTTFont::setDimension(18, 18);
+	
 
-	//float nfontLize = nSmallSize; // small text
-
-	if(nFrameStep == 0) { yPos += NSHADOWXYPOS2; xPos += NSHADOWXYPOS2; }
-
-	//yPos += (yPosDiff * 4);
-	if (nFrameStep == 0) {
-        //rsxbuffer = &(app.buffers[app.currentBuffer]);
-        //rsxBuffer *buffer = &buffers[currentBuffer];
-        //png_src = app.textures[TEX_GAME_LIST]->png;
-        //memcpy(texture_buffer, PNG_SRC->bmp_out, PNG_SRC->width * PNG_SRC->height * sizeof(uint32_t));
-	}
+	
     game_ord_id = 0;
 
-	nColor = nTextColor;
+	
 
 
     if(nFilteredGames >= 1)
@@ -250,51 +198,66 @@ void c_fbaRL::GameList_Frame()
 
 		int nGame = nGameListTop;
 
-		yPos = 0.01;
-		xPos = 0.025;
+		
 		while(nGame <= (nGameListTop + NGAMELISTMAX))
 		{
 			if(nFilteredGames < 1) break;
 			if(nGame == nFilteredGames) break;
 
-			nColor = nTextColor;
-			//nfontLize = nSmallSizeSel; // small text (selected)
+			
 
-			// missing
-			if(!fgames[nGame]->bAvailable) {
-				nColor = 0xffff0000;
+			if (nFrameStep == 0) {
+				EasyTTFont::setColor(SHADOWCOLOR);
+				EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(int)(yPos * display_height) + 1);
 			}
-
-			if(fgames[nGame]->isFavorite) {
-				nColor = 0xff00ccff;
-			}
-
-			// selected
-			if(nGame == nSelectedGame)
+			else
 			{
-				nColor = 0xffffcc00;
-				//nfontLize = nSmallSize2;
+				if (nGame == nSelectedGame) {  // selected
+					EasyTTFont::setColor(YELLOWCOLOR);
+				}
+				else
+				{	// missing
+					if (!fgames[nGame]->bAvailable) {
+						EasyTTFont::setColor(REDCOLOR);
+					}
+					else
+						if (fgames[nGame]->isFavorite) // favorite
+						{
+							EasyTTFont::setColor(LIGHTBLUECOLOR);
+						}
+						else
+						{
+							EasyTTFont::setColor(WHITECOLOR);
+						}
+				}
+				
+				EasyTTFont::setPosition((int)(xPos * display_width), (int)(int)(yPos * display_height));
 			}
+			
 
-			if(nFrameStep == 0) { nColor = NSHADOWCOLOR; } // Shadow color
+			/*if(fgames[nGame]->isFavorite) {
+				nColor = 0xff00ccff;
+			}*/
+
+			//// selected
+			//if(nGame == nSelectedGame)
+			//{
+			//	nColor = 0xffffcc00;
+			//	//nfontLize = nSmallSize2;
+			//}
+
+			//if(nFrameStep == 0) { nColor = NSHADOWCOLOR; } // Shadow color
 
             hashmap_position = games[fgames[nGame]->GameID]->nSize;
 			//fba_drv = (FBA_DRV *)DRVMAP->data[hashmap_position].data;
             //memcpy(pszFinalText, games[fgames[nGame]->GameID]->title, 104);
-            snprintf(txt, 128, "%s", FBADRV->szTitle );
+			//memcpy16(txt, FBADRV->szTitle, 128);
+			//strcpy(txt, FBADRV->szTitle);
+			//snprintf(txt, 128, "%s", FBADRV->szTitle );
             //memcpy(pszFinalText, fba_drv->szTitle, 104);
 			
 			//Main cycle
-			fnt_print_vram(&fontM, (u32*)app.textures[SECTION_GAMELIST]->texture_buffer[0],
-				app.textures[SECTION_GAMELIST]->texture_dim[0].w,
-				(int)(xPos * app.textures[SECTION_GAMELIST]->texture_dim[0].w),
-				(int)(yPos * app.textures[SECTION_GAMELIST]->texture_dim[0].h),
-				txt, nColor, 0x00000000, fontSize, fontSize);
-			/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+			EasyTTFont::print(FBADRV->szTitle, 82);
 
 			yPos += yPosDiff;
 
@@ -304,60 +267,63 @@ void c_fbaRL::GameList_Frame()
 
 	}
 
-	X = round(19.0f  + (551.0f  - app.textures[TEX_PREVIEW]->png->width)/2.0f);
-	Y = round(404.0f + (460.0f  - app.textures[TEX_PREVIEW]->png->height)/2.0f);
-	//printf("Draw to: %d:%d\n",X,Y);
-	//AGGIUSTARE fbaRL->DrawIMG(X,Y, app.textures[TEX_PREVIEW]->png);
-
-	X = round(19.0f + (551.0f - app.textures[TEX_PREVIEW]->pngSec->width)/2.0f);
-	Y = round(19.0f + (360.0f - app.textures[TEX_PREVIEW]->pngSec->height)/2.0f);
-    //printf("Draw to: %d:%d\n",X,Y);
-	//AGGIUSTARE fbaRL->DrawIMG(X,Y, app.textures[TEX_PREVIEW]->pngSec);
+	
 
 
-	nColor = nTextColor;
-	if(nFrameStep == 0) { nColor = NSHADOWCOLOR; } // Shadow color
-
+	EasyTTFont::setDimension(12, 12);
 	xPos = 0.3050f;
-	yPos = 0.9190f;
-	//if(nFrameStep == 0) { yPos += nShadowXYpos2; xPos +=nShadowXYpos2; }
+	yPos = 0.9184f;
+	yPosDiff = 0.0199f;
+	if (nFrameStep == 0)
+	{
+		EasyTTFont::setColor(SHADOWCOLOR);
+		EasyTTFont::setPosition((int)(xPos* display_width) + 1, (int)(yPos* display_height) + 1);
+	}
+	else
+	{
+		EasyTTFont::setColor(WHITECOLOR);
+		EasyTTFont::setPosition((int)(xPos* display_width), (int)(yPos* display_height));
+	}
+
 
 	snprintf(txt,sizeof(txt),"GAMES AVAILABLE: %d - MISSING: %d",
                 nTotalGames,
                 app.nMissingGames);
-	//AGGIUSTARE
-	/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+	EasyTTFont::print(txt);
+	
 
     yPos += yPosDiff;
+	if (nFrameStep == 0)
+	{
+		EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+	}
+	else
+	{
+		EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+	}
  	snprintf(txt,sizeof(txt),"FILTER: %s - FILTERED: %d",
                 GetSystemFilter(g_opt_nActiveSysFilter),
                 nFilteredGames);
-	//AGGIUSTARE
-	/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+	EasyTTFont::print(txt);
 
     yPos += yPosDiff;
+	if (nFrameStep == 0)
+	{
+		EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+	}
+	else
+	{
+		EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+	}
     if (app.ftrack != NULL) {
         snprintf(txt,sizeof(txt),"TRACK: %s", (*app.trackID).c_str());
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+		EasyTTFont::print(txt);
     }
 
 
 	xPos = 0.5422f;
 	yPos = 0.0361f;
-	yPosDiff	= 0.0200f;
+	//yPosDiff	= 0.0200f;
 
 
 
@@ -368,53 +334,71 @@ void c_fbaRL::GameList_Frame()
 
 		snprintf(txt,sizeof(txt)," TITLE:       %s", FBADRV->szTitle);
 
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+		if (nFrameStep == 0)
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		}
+		EasyTTFont::print(txt,78);
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," ROMSET:      %s  -  PARENT:      %s",
                     games[game_ord_id]->name,games[nBurnSelected]->parent_name);
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+		if (nFrameStep == 0)
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		}
+		EasyTTFont::print(txt);
 
 		yPos += yPosDiff;
 
 
 		snprintf(txt,sizeof(txt)," COMPANY:     %s", games[game_ord_id]->company);
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+		if (nFrameStep == 0)
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		}
+		EasyTTFont::print(txt);
+
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," YEAR:        %s  -  SYSTEM:      %s",
            games[game_ord_id]->year, games[game_ord_id]->subsystem);
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+		if (nFrameStep == 0)
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		}
+		EasyTTFont::print(txt);
+
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," MAX PLAYERS: %d  -  RESOLUTION:  %s (%s)",
                     games[game_ord_id]->players,games[nBurnSelected]->resolution,games[game_ord_id]->aspectratio);
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-			PNG_SRC->width,
-					(int)(xPos * PNG_SRC->width),
-					(int)(yPos * PNG_SRC->height),
-						txt, nColor, 0x00000000, fontSize, fontSize);*/
+		if (nFrameStep == 0)
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		}
+		EasyTTFont::print(txt);
+
 		yPos += yPosDiff;
 
 
@@ -423,28 +407,34 @@ void c_fbaRL::GameList_Frame()
 
 
                 snprintf(txt,sizeof(txt)," PATH: %s",FBAGAMES->szPath);
-				//AGGIUSTARE
-				/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-					PNG_SRC->width,
-                            (int)(xPos * PNG_SRC->width),
-                            (int)(yPos * PNG_SRC->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);*/
+				if (nFrameStep == 0)
+				{
+					EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+				}
+				else
+				{
+					EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+				}
+				EasyTTFont::print(txt);
 
         }
-        yPos += yPosDiff;
+        yPos += yPosDiff + 0.015;
 
         if (app.state.displayMode.resolution == 1)
-            xPos = xPos + 0.22;
+            xPos = xPos + 0.20;
         else
-            xPos = xPos + 0.25;
+            xPos = xPos + 0.23;
         lv2syscall1(352, (uint64_t) &meminfo);
         snprintf(txt,sizeof(txt),"MEMORY TOTAL: %d - AVAIL: %d", meminfo.total / 1024, meminfo.avail / 1024);
-		//AGGIUSTARE
-		/*fnt_print_vram(&fontM, (u32 *)texture_buffer,
-			PNG_SRC->width,
-					(int)(xPos  * PNG_SRC->width),
-					(int)((yPos + 0.012) * PNG_SRC->height),
-                    txt, nColor, 0x00000000, fontSize, fontSize);*/
+		if (nFrameStep == 0)
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		}
+		else
+		{
+			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		}
+		EasyTTFont::print(txt);
 		yPos += yPosDiff;
 	}
 
@@ -477,11 +467,11 @@ void c_fbaRL::DrawIMG(int x, int y, pngData *png1){
 
 		scr += y* MAX_WIDTH+x;
 		int height = png1->height;
-		if((y+height) >= (u32)MAX_HEIGHT)
+		if((y+height) >= MAX_HEIGHT)
 			height = MAX_HEIGHT-1-y;
 
 		int width = png1->width;
-		if((x+width) >= (u32)MAX_WIDTH)
+		if((x+width) >= MAX_WIDTH)
 			width = MAX_WIDTH-x-1;
 
 		width-=error_x;
@@ -543,76 +533,76 @@ void c_fbaRL::Options_Frame()
 
 			if(nMenuItem == MENU_OPT_AUTO_CFG) {
 				snprintf(txt,sizeof(txt),"Auto create basic Input Preset CFG files for all systems.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if(nMenuItem == MENU_OPT_MUSIC) {
 				snprintf(txt,sizeof(txt),"Enable / Disable background MP3 music.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if(nMenuItem == MENU_OPT_RETROARCH_MENU) {
 				snprintf(txt,sizeof(txt),"Change Retro Arch menu driver.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if(nMenuItem == MENU_OPT_DISP_CLONES) {
 				snprintf(txt,sizeof(txt),"Enable / Disable display of clone games.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if(nMenuItem == MENU_OPT_USE_UNIBIOS) {
 				snprintf(txt,sizeof(txt),"Use UNI-BIOS when playing Neo-Geo games.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if(nMenuItem == MENU_OPT_DISP_MISS_GMS) {
 				snprintf(txt,sizeof(txt),"Enable / Disable display of missing games.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if (nMenuItem == MENU_OPT_MD_DEF_CORE) {
 				snprintf(txt, sizeof(txt), "Select default core for MegaDrive games.");
-				fnt_print_vram(&fontM, (u32*)texture_buffer, png_src->width, (int)(x * png_src->width),
+				/*fnt_print_vram(&fontM, (u32*)texture_buffer, png_src->width, (int)(x * png_src->width),
 					(int)(y * png_src->height),
-					txt, nColor, 0x00000000, fontSize, fontSize);
+					txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			if(nMenuItem >= MENU_OPT_FILTER_START && nMenuItem <=  MASKFAVORITE+MENU_OPT_FILTER_START) {
 				snprintf(txt,sizeof(txt),"Choose the emulated system(s) you want to be displayed / filtered.");
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			// Rom Paths (directories)
 			if(nMenuItem > MASKFAVORITE+MENU_OPT_FILTER_START && nMenuItem <= MASKFAVORITE+MENU_OPT_FILTER_START+NDIRPATH) {
 				int nRomPath = nMenuItem-(MASKFAVORITE+MENU_OPT_FILTER_START+1);
 				snprintf(txt,sizeof(txt),"Current: %s", g_opt_szROMPaths[nRomPath]);
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			// Input Preset Paths (CFG)
 			if(nMenuItem > MASKFAVORITE+MENU_OPT_FILTER_START+12 && nMenuItem <= MASKFAVORITE+MENU_OPT_FILTER_START+NDIRPATH+MASKFAVORITE) {
 				int nCfgPath = nMenuItem-(MASKFAVORITE+MENU_OPT_FILTER_START+12+1);
 				snprintf(txt,sizeof(txt),"Current: %s", g_opt_szInputCFG[nCfgPath]);
-                fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
+                /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(x * png_src->width),
                            (int)(y * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			}
 
 			nColor = nSelectColor;
@@ -623,58 +613,58 @@ void c_fbaRL::Options_Frame()
 		if(nMenuItem == MENU_OPT_AUTO_CFG) {
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     g_opt_bAutoInputCfgCreate ? "ON" : "OFF");
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		if(nMenuItem == MENU_OPT_MUSIC) {
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     //g_opt_bUseAltMenuKeyCombo ? "ON" : "OFF");
                     g_opt_bMusic ? "ON" : "OFF");
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		if(nMenuItem == MENU_OPT_RETROARCH_MENU) {
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     g_opt_sRetroArchMenu[g_opt_nRetroArchMenu]);
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		if(nMenuItem == MENU_OPT_DISP_CLONES) { //CRYSTAL
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     g_opt_bDisplayCloneGames ? "ON" : "OFF");
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		if(nMenuItem == MENU_OPT_USE_UNIBIOS) {
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     g_opt_bUseUNIBIOS ? "ON" : "OFF");
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		if(nMenuItem == MENU_OPT_DISP_MISS_GMS) {
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     g_opt_bDisplayMissingGames ? "ON" : "OFF");
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		if (nMenuItem == MENU_OPT_MD_DEF_CORE) {
 			snprintf(txt, sizeof(txt), "%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
 				g_opt_sMegaDriveCores[g_opt_nMegaDriveDefaultCore]);
-			fnt_print_vram(&fontL, (u32*)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+			/*fnt_print_vram(&fontL, (u32*)texture_buffer, png_src->width, (int)(xPos * png_src->width),
 				(int)(yPos * png_src->height),
-				txt, nColor, 0x00000000, 1, 1);
+				txt, nColor, 0x00000000, 1, 1);*/
 		}
 
 		// Custom System Filters
@@ -684,9 +674,9 @@ void c_fbaRL::Options_Frame()
 
                 snprintf(txt,sizeof(txt),"%s: [%s]", options_menu->item[nMenuItem]->szMenuLabel,
                     g_opt_bCustomSysFilter[nSysFilter] ? "ON" : "OFF");
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 //			cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "%s: [%s]",
 //				options_menu->item[nMenuItem]->szMenuLabel,
 //				g_opt_bCustomSysFilter[nSysFilter] ? "ON" : "OFF"
@@ -697,9 +687,9 @@ void c_fbaRL::Options_Frame()
 		if(nMenuItem > MASKFAVORITE+MENU_OPT_FILTER_START && nMenuItem <= MASKFAVORITE+MENU_OPT_FILTER_START+NDIRPATH)
 		{
                 snprintf(txt,sizeof(txt),"%s: [...]", options_menu->item[nMenuItem]->szMenuLabel);
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 //			cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "%s: [...]", options_menu->item[nMenuItem]->szMenuLabel);
 		}
 
@@ -707,9 +697,9 @@ void c_fbaRL::Options_Frame()
 		if(nMenuItem > MASKFAVORITE+MENU_OPT_FILTER_START+12 && nMenuItem <= MASKFAVORITE+MENU_OPT_FILTER_START+NDIRPATH+MASKFAVORITE)
 		{
                 snprintf(txt,sizeof(txt),"%s: [...]", options_menu->item[nMenuItem]->szMenuLabel);
-                fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+                /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 //			cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "%s: [...]", options_menu->item[nMenuItem]->szMenuLabel);
 		}
 
@@ -750,9 +740,9 @@ void c_fbaRL::FileBrowser_Frame()
 
 	////cellDbgFontPrintf(xPos, yHeadPos, nfontLize, nColor, "CURRENT DIR: %s", filebrowser->pszCurrentDir);
 	snprintf(txt,sizeof(txt),"CURRENT DIR: %s", filebrowser->pszCurrentDir);
-    fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+    /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yHeadPos * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 	yPos += yPosDiff;
 
 	if(filebrowser->nTotalItem >= 1)
@@ -777,9 +767,9 @@ void c_fbaRL::FileBrowser_Frame()
 
 			////cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "%s", filebrowser->item[nMenuItem]->szMenuLabel);
             snprintf(txt,sizeof(txt),"%s", filebrowser->item[nMenuItem]->szMenuLabel);
-            fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+            /*fnt_print_vram(&fontL, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, 1, 1);
+                            txt, nColor, 0x00000000, 1, 1);*/
 			yPos += yPosDiff;
 
 			nMenuItem++;
@@ -821,9 +811,9 @@ void c_fbaRL::ZipInfo_Frame()
 		memcpy(pszZipName, fgames[nSelectedGame]->zipname, 32);
 
 		snprintf(txt,sizeof(txt),"ZIP: %s / TOTAL FILES FOUND: %d", pszZipName, zipinfo_menu->nTotalItem);
-        fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+        /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 		//cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "ZIP: %s / TOTAL FILES FOUND: %d", pszZipName, zipinfo_menu->nTotalItem);
 		yPos += yPosDiff;
 
@@ -851,9 +841,9 @@ void c_fbaRL::ZipInfo_Frame()
 			//if(nFrameStep == 0) { nColor = nShadowColor; } // Shadow color
 
             snprintf(txt,sizeof(txt),"%s", zipinfo_menu->item[nMenuItem]->szMenuLabel);
-            fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+            /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 			//cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "[%d] %s", nMenuItem+1, zipinfo_menu->item[nMenuItem]->szMenuLabel);
 			yPos += yPosDiff;
 
@@ -899,9 +889,9 @@ void c_fbaRL::RomInfo_Frame()
 		memcpy(pszZipName, fgames[nSelectedGame]->zipname, 32);
 
 		snprintf(txt,sizeof(txt),"ROMSET: %s ", pszZipName);
-        fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+        /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 		//cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "ROMSET: %s / TOTAL ROMS: %d", pszZipName, rominfo_menu->nTotalItem);
 		yPos += yPosDiff;
 
@@ -929,9 +919,9 @@ void c_fbaRL::RomInfo_Frame()
 			//if(nFrameStep == 0) { nColor = nShadowColor; } // Shadow color
 
 			snprintf(txt,sizeof(txt),"%s", rominfo_menu->item[nMenuItem]->szMenuLabel);
-            fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
+            /*fnt_print_vram(&fontM, (u32 *)texture_buffer, png_src->width, (int)(xPos * png_src->width),
                            (int)(yPos * png_src->height),
-                            txt, nColor, 0x00000000, fontSize, fontSize);
+                            txt, nColor, 0x00000000, fontSize, fontSize);*/
 
 			//cellDbgFontPrintf(xPos, yPos, nfontLize, nColor, "[%d] %s", nMenuItem+1, rominfo_menu->item[nMenuItem]->szMenuLabel);
 			yPos += yPosDiff;

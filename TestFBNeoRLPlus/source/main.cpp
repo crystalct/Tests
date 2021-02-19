@@ -7,7 +7,6 @@
 #include <ppu-types.h>
 #include <sysmodule/sysmodule.h>
 #include <pngdec/pngdec.h>
-#include "wall1_png_bin.h"
 
 #include <sys/process.h>
 
@@ -26,15 +25,18 @@
 #include "sqlite.h"
 #include "misc.h"
 #include "ftp.h"
-#include "fnt_print.h"
-#include "fnt35.h"
-
+//#include "fnt_print.h"
+//#include "fnt35.h"
+#include "rsxeasyttfontrenderer.h"
 
 #include "diffuse_specular_shader_vpo.h"
 #include "diffuse_specular_shader_fpo.h"
 
-fnt_t fontM, fontL;
+//fnt_t fontM, fontL;
 vs32 dialog_action = 0;
+
+RSXEasyTTFontRenderer* easyTTFontRenderer;
+smeminfo meminfo;
 
 typedef struct
 {
@@ -60,11 +62,6 @@ u32* texture_buffer;
 u32 texture_offset;
 
 pngData* png;
-
-typedef struct {
-	uint32_t total;
-	uint32_t avail;
-} smeminfo;
 
 SMeshBuffer* quad = NULL;
 
@@ -442,6 +439,7 @@ CapApp app;
 
 int main(int argc, char *argv[])
 {
+	printf("MAIN\n");
 	app.onInit(argc, argv);
 	return 0;
 
@@ -486,7 +484,7 @@ void CapApp::onRender()
 
 	/*////if(fbaRL) { fbaRL->RenderBackground(); }
 	*/
-	//if (fbaRL) { fbaRL->nFrameStep = 0; fbaRL->DisplayFrame(); }
+	if (fbaRL) { fbaRL->nFrameStep = 0; fbaRL->DisplayFrame(); }
 	if (fbaRL) { fbaRL->nFrameStep = 1; fbaRL->DisplayFrame(); }
 }
 
@@ -511,7 +509,7 @@ void CapApp::onShutdown()
 
 	hashmap_free(drvMap);
 	hashmap_free(gamesMap);
-		
+	EasyTTFont::shutdown();
 	deinitSPUSound();
 
 	InputExit();
@@ -546,10 +544,10 @@ void CapApp::FontInit()
 		//printf("Loaded fontL\n");
 	}
 	else {*/
-		ret2 = internal_load_font(&fontM, "/dev_hdd0/game/FBNE00123/USRDIR/b12.fnt");
+		//ret2 = internal_load_font(&fontM, "/dev_hdd0/game/FBNE00123/USRDIR/b12.fnt");
 		//ret1 = internal_load_font(&fontL, "/dev_hdd0/game/FBNE00123/USRDIR/b24_b.fnt");
 		ret1 = 0;
-		fnt_load_mem(fnt35, &fontL);
+		//fnt_load_mem(fnt35, &fontL);
 	//}
 	if (ret1 || ret2) {
 		printf("Error load fonts\n");
@@ -572,15 +570,21 @@ void CapApp::initGraphics()
 {
 	//host_addr = memalign(HOST_ADDR_ALIGNMENT, HOSTBUFFER_SIZE);
 	printf("rsxtest started...\n");
-
+	getmem(&meminfo);
+	printf("MEMORY RSX1 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 	//init_screen(host_addr, HOSTBUFFER_SIZE);
+	
 	initScreen(HOSTBUFFER_SIZE);
+	getmem(&meminfo);
+	printf("MEMORY RSX2 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 	//Init background Image
 	png = new pngData;
 	pngLoadFromFile("/dev_hdd0/game/FBNE00123/USRDIR/LOADING1.PNG", png);
 	//pngLoadFromBuffer(wall1_png_bin, wall1_png_bin_size, png);
 	
 	//Create quad
+	printf("MEMORY RSX3 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
+	//Init background Image
 	quad = createQuad(Point3(-1.0, -1.0, 0), Point3(1.0, 1.0, 0), Point3(-1.0, 1.0, 0), Point3(1.0, -1.0, 0));
 
 	wait_label = gcmGetLabelAddress(GCM_APP_WAIT_LABEL_INDEX);
@@ -589,9 +593,14 @@ void CapApp::initGraphics()
 	mLabel = gcmGetLabelAddress(64);
 	*mLabel = myLabelValue;
 
+	printf("MEMORY RSX4 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
+	//Init background Image
 	init_shader();
+	printf("MEMORY RSX5 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
+	//Init background Image
 	init_texture();
-
+	printf("MEMORY RSX6 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
+	//Init background Image
 
 	//setDrawEnv();
 
@@ -622,13 +631,14 @@ void CapApp::initGraphics()
 	nTextures++;
 
 	textures[TEX_PREVIEW] = new c_tex(TEX_PREVIEW, g_opt_szTextures[TEX_PREVIEW]);
+	
 }
 
 
 
 bool CapApp::onInit(int argc, char* argv[])
 {
-	smeminfo meminfo;
+	
 #ifdef FDEBUG
 	FILE* fdebug = NULL;
 	fdebug = fopen("/dev_hdd0/game/FBNE00123/USRDIR/fdebug.log", "w");
@@ -750,7 +760,8 @@ bool CapApp::onInit(int argc, char* argv[])
 	fprintf(fdebug, "InitDB OK\n");
 	fflush(fdebug);
 #endif
-
+	getmem(&meminfo);
+	printf("MEMORY6 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 	int r = ftp_init();
 #ifdef FDEBUG
 	fprintf(fdebug, "ftp_init OK\n");
@@ -769,8 +780,15 @@ bool CapApp::onInit(int argc, char* argv[])
 		else if (r == -4) printf("Net Disconnected or Connection not Established\n");
 		else printf("Another FTP service present!\n");
 	}
-
+	getmem(&meminfo);
+	printf("MEMORY7 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 	FontInit();
+	easyTTFontRenderer = new RSXEasyTTFontRenderer(gGcmContext);
+	printf("easyTTFontRenderer: %p\n", easyTTFontRenderer);
+	EasyTTFont::init();
+	EasyTTFont::setScreenRes(display_width, display_height);
+	getmem(&meminfo);
+	printf("MEMORY8 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 #ifdef FDEBUG
 	fprintf(fdebug, "FontInit OK\n");
 	fflush(fdebug);
@@ -805,6 +823,8 @@ bool CapApp::onInit(int argc, char* argv[])
 #endif
 
 	fbaRL->InitGameList();
+	getmem(&meminfo);
+	printf("MEMORY9 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 #ifdef FDEBUG
 	fprintf(fdebug, "InitGameList OK\n");
 	fflush(fdebug);
@@ -813,6 +833,8 @@ bool CapApp::onInit(int argc, char* argv[])
 
 	//printf("fbaRL->InitFilterList()\n");
 	fbaRL->InitFilterList();
+	getmem(&meminfo);
+	printf("MEMORY10 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 #ifdef FDEBUG
 	fprintf(fdebug, "InitFilterList OK\n");
 	fclose(fdebug);
@@ -844,10 +866,10 @@ bool CapApp::onInit(int argc, char* argv[])
 	while (bRun)
 	{
 		sysUtilCheckCallback();
+		drawFrame2(fbaRL->nSection);
 		onRender();
 		onUpdate();
 
-		drawFrame2(fbaRL->nSection);
 		flip();
 		
 	}

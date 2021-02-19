@@ -68,7 +68,11 @@
 #define DIR_NO_DOT_AND_DOTDOT	( DIR_SKIP_DOT | DIR_SKIP_DOTDOT )
 
 #define GCM_APP_WAIT_LABEL_INDEX		128
-#define HOSTBUFFER_SIZE		(128*1024*1024)
+#define HOSTBUFFER_SIZE		(32*1024*1024)
+
+extern "C" {
+	void memcpy16(void* dst, const void* src, size_t n);
+}
 
 enum CoreOptions {
 	CoreOptionsInvalid,
@@ -82,6 +86,11 @@ enum CoreOptions {
 	pcengine,
 	supergrafx
 };
+
+typedef struct {
+	uint32_t total;
+	uint32_t avail;
+} smeminfo;
 
 //CoreOptions resolveCoreOption(string input);
 

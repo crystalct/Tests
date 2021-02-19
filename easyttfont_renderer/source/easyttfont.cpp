@@ -1,6 +1,3 @@
-#include <ft2build.h>
-#include <freetype/freetype.h> 
-#include <freetype/ftglyph.h>
 #include <rsx/rsx.h>
 #include "easyttfont.h"
 #include "easyttfontrenderer.h"
@@ -10,13 +7,11 @@
 
 
 
-static FT_Library freetype;
-static FT_Face face;
-static int f_face = 0;
+FT_Library EasyTTFont::freetype;
+FT_Face EasyTTFont::face;
+int EasyTTFont::f_face;
 
 ttf_dyn EasyTTFont::ttf_font_datas[MAX_CHARS];
-
-//static ttf_dyn ttf_font_datas[MAX_CHARS];
 
 u32 EasyTTFont::r_use;
 s32 EasyTTFont::ttf_inited;
@@ -66,6 +61,7 @@ void EasyTTFont::init()
 	gly_w = EASYTTFONT_GLYPH_WIDTH;
 	gly_h = EASYTTFONT_GLYPH_HEIGHT;
 	r_use = 0;
+	f_face = 0;
 
 	spRenderer->init();
 	ttf_inited = 0;

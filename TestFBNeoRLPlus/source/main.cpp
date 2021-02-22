@@ -25,9 +25,8 @@
 #include "sqlite.h"
 #include "misc.h"
 #include "ftp.h"
-//#include "fnt_print.h"
-//#include "fnt35.h"
-#include "rsxeasyttfontrenderer.h"
+
+#include "rsxbitmapfntrenderer.h"
 
 #include "diffuse_specular_shader_vpo.h"
 #include "diffuse_specular_shader_fpo.h"
@@ -35,7 +34,7 @@
 //fnt_t fontM, fontL;
 vs32 dialog_action = 0;
 
-RSXEasyTTFontRenderer* easyTTFontRenderer;
+RSXBitmapFNTRenderer* bitmapFNTRenderer;
 smeminfo meminfo;
 
 typedef struct
@@ -509,7 +508,7 @@ void CapApp::onShutdown()
 
 	hashmap_free(drvMap);
 	hashmap_free(gamesMap);
-	EasyTTFont::shutdown();
+	BitmapFNT::shutdown();
 	deinitSPUSound();
 
 	InputExit();
@@ -783,10 +782,10 @@ bool CapApp::onInit(int argc, char* argv[])
 	getmem(&meminfo);
 	printf("MEMORY7 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 	FontInit();
-	easyTTFontRenderer = new RSXEasyTTFontRenderer(gGcmContext);
-	printf("easyTTFontRenderer: %p\n", easyTTFontRenderer);
-	EasyTTFont::init();
-	EasyTTFont::setScreenRes(display_width, display_height);
+	bitmapFNTRenderer = new RSXBitmapFNTRenderer(gGcmContext);
+	printf("bitmapFNTRenderer: %p\n", bitmapFNTRenderer);
+	BitmapFNT::init();
+	BitmapFNT::setScreenRes(display_width, display_height);
 	getmem(&meminfo);
 	printf("MEMORY8 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 #ifdef FDEBUG

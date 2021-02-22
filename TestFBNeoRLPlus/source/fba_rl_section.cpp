@@ -8,7 +8,7 @@
 #include <ppu-lv2.h>
 #include <lv2/memory.h>
 #include "rsxutil.h"
-#include "easyttfont.h"
+#include "bitmapfnt.h"
 
 extern smeminfo meminfo;
 
@@ -25,14 +25,16 @@ extern smeminfo meminfo;
 #define NSHADOWXYPOS2   0.00150f
 
 //COLORS R,G,B,A
-//#define SHADOWCOLOR		0.2f, 0.2f, 0.2f, 1.0f
-#define SHADOWCOLOR		0.094f, 0.522f, 0.925f, 1.0f
+#define SHADOWCOLOR		0.2f, 0.2f, 0.2f, 1.0f
+//#define SHADOWCOLOR		0.094f, 0.522f, 0.925f, 1.0f
 #define YELLOWCOLOR		1.0f, 1.0f, 0.0f, 1.0f
 #define WHITECOLOR		1.0f, 1.0f, 1.0f, 1.0f
 #define LIGHTBLUECOLOR  0.0f, 0.8f, 1.0f, 1.8f
 #define REDCOLOR		1.0f, 0.0f, 0.0f, 1.0f
+#define GRAYCOLOR		0.87f, 0.87f, 0.87f , 1.0f
+#define GRAYCOLOR2		0.7f, 0.7f, 0.7f , 1.0f
 
-#define NGAMELISTMAX    25
+#define NGAMELISTMAX    27
 #define DRVMAP          ((hashmap_map *) app.drvMap)
 #define GAMESMAP        ((hashmap_map *) app.gamesMap)
 #define PNG_SRC         (app.textures[TEX_GAME_LIST]->png)
@@ -108,20 +110,20 @@ void c_fbaRL::MainMenu_Frame()
 	yPos		= 0.5885f;
 	yPosDiff	= 0.0400f;
 	
-	EasyTTFont::setDimension(15, 16);
+	BitmapFNT::setDimension(15, 16);
 	if (nFrameStep == 0) 
 	{
-			EasyTTFont::setColor(SHADOWCOLOR);
-			EasyTTFont::setPosition((int)(0.229 * display_width) + 1, (int)(0.135 * display_height) + 1);
+			BitmapFNT::setColor(SHADOWCOLOR);
+			BitmapFNT::setPosition((int)(0.229 * display_width) + 1, (int)(0.135 * display_height) + 1);
 	}
 	else
 	{
-			EasyTTFont::setColor(WHITECOLOR);
-			EasyTTFont::setPosition((int)(0.229 * display_width), (int)(0.135 * display_height));
+			BitmapFNT::setColor(WHITECOLOR);
+			BitmapFNT::setPosition((int)(0.229 * display_width), (int)(0.135 * display_height));
 	}
 
 	snprintf(txt,sizeof(txt),"ver: %s (ip: %s)", _APP_VER, ipaddress);
-	EasyTTFont::print(txt);
+	BitmapFNT::print(txt);
 	
 	yPos = 0.2000f;
 	xPos = 0.0600f;
@@ -129,26 +131,26 @@ void c_fbaRL::MainMenu_Frame()
 	
 	int nMenuItem = 0;
 	
-	EasyTTFont::setDimension(22, 26);
+	BitmapFNT::setDimension(22, 26);
 	while(nMenuItem < main_menu->nTotalItem)
 	{
 		if (nFrameStep == 0) {
-			EasyTTFont::setColor(SHADOWCOLOR);
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(int)(yPos * display_height) + 1);
+			BitmapFNT::setColor(SHADOWCOLOR);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(int)(yPos * display_height) + 1);
 		}
 		else
 		{
 			if (nMenuItem == main_menu->nSelectedItem) {  // selected
-				EasyTTFont::setColor(YELLOWCOLOR);
+				BitmapFNT::setColor(YELLOWCOLOR);
 			}
 			else
 			{
-				EasyTTFont::setColor(WHITECOLOR);
+				BitmapFNT::setColor(WHITECOLOR);
 			}
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(int)(yPos * display_height));
 		}
 
-		EasyTTFont::print(main_menu->item[nMenuItem]->szMenuLabel);
+		BitmapFNT::print(main_menu->item[nMenuItem]->szMenuLabel);
 		
 		yPos += yPosDiff;
 
@@ -163,13 +165,13 @@ void c_fbaRL::GameList_Frame()
 
 	xPos = 0.3260;
 	yPos = 0.2010;
-	yPosDiff	= 0.0267f;
+	yPosDiff	= 0.025f;
 
    /* if (app.state.displayMode.resolution == 1)
         fontSize = 2;
     else*/
         
-	EasyTTFont::setDimension(18, 18);
+	BitmapFNT::setDimension(17, 22);
 	
 
 	
@@ -207,31 +209,31 @@ void c_fbaRL::GameList_Frame()
 			
 
 			if (nFrameStep == 0) {
-				EasyTTFont::setColor(SHADOWCOLOR);
-				EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(int)(yPos * display_height) + 1);
+				BitmapFNT::setColor(SHADOWCOLOR);
+				BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(int)(yPos * display_height) + 1);
 			}
 			else
 			{
 				if (nGame == nSelectedGame) {  // selected
-					EasyTTFont::setColor(YELLOWCOLOR);
+					BitmapFNT::setColor(YELLOWCOLOR);
 				}
 				else
 				{	// missing
 					if (!fgames[nGame]->bAvailable) {
-						EasyTTFont::setColor(REDCOLOR);
+						BitmapFNT::setColor(REDCOLOR);
 					}
 					else
 						if (fgames[nGame]->isFavorite) // favorite
 						{
-							EasyTTFont::setColor(LIGHTBLUECOLOR);
+							BitmapFNT::setColor(LIGHTBLUECOLOR);
 						}
 						else
 						{
-							EasyTTFont::setColor(WHITECOLOR);
+							BitmapFNT::setColor(WHITECOLOR);
 						}
 				}
 				
-				EasyTTFont::setPosition((int)(xPos * display_width), (int)(int)(yPos * display_height));
+				BitmapFNT::setPosition((int)(xPos * display_width), (int)(int)(yPos * display_height));
 			}
 			
 
@@ -257,7 +259,7 @@ void c_fbaRL::GameList_Frame()
             //memcpy(pszFinalText, fba_drv->szTitle, 104);
 			
 			//Main cycle
-			EasyTTFont::print(FBADRV->szTitle, 82);
+			BitmapFNT::print(FBADRV->szTitle, 82);
 
 			yPos += yPosDiff;
 
@@ -270,54 +272,54 @@ void c_fbaRL::GameList_Frame()
 	
 
 
-	EasyTTFont::setDimension(12, 12);
+	BitmapFNT::setDimension(17, 16);
 	xPos = 0.3050f;
 	yPos = 0.9184f;
 	yPosDiff = 0.0199f;
 	if (nFrameStep == 0)
 	{
-		EasyTTFont::setColor(SHADOWCOLOR);
-		EasyTTFont::setPosition((int)(xPos* display_width) + 1, (int)(yPos* display_height) + 1);
+		BitmapFNT::setColor(SHADOWCOLOR);
+		BitmapFNT::setPosition((int)(xPos* display_width) + 1, (int)(yPos* display_height) + 1);
 	}
 	else
 	{
-		EasyTTFont::setColor(WHITECOLOR);
-		EasyTTFont::setPosition((int)(xPos* display_width), (int)(yPos* display_height));
+		BitmapFNT::setColor(GRAYCOLOR2);
+		BitmapFNT::setPosition((int)(xPos* display_width), (int)(yPos* display_height));
 	}
 
 
 	snprintf(txt,sizeof(txt),"GAMES AVAILABLE: %d - MISSING: %d",
                 nTotalGames,
                 app.nMissingGames);
-	EasyTTFont::print(txt);
+	BitmapFNT::print(txt);
 	
 
     yPos += yPosDiff;
 	if (nFrameStep == 0)
 	{
-		EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 	}
 	else
 	{
-		EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 	}
  	snprintf(txt,sizeof(txt),"FILTER: %s - FILTERED: %d",
                 GetSystemFilter(g_opt_nActiveSysFilter),
                 nFilteredGames);
-	EasyTTFont::print(txt);
+	BitmapFNT::print(txt);
 
     yPos += yPosDiff;
 	if (nFrameStep == 0)
 	{
-		EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+		BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 	}
 	else
 	{
-		EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+		BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 	}
     if (app.ftrack != NULL) {
         snprintf(txt,sizeof(txt),"TRACK: %s", (*app.trackID).c_str());
-		EasyTTFont::print(txt);
+		BitmapFNT::print(txt, 52);
     }
 
 
@@ -325,6 +327,16 @@ void c_fbaRL::GameList_Frame()
 	yPos = 0.0361f;
 	//yPosDiff	= 0.0200f;
 
+	if (nFrameStep == 0)
+	{
+		BitmapFNT::setColor(SHADOWCOLOR);
+		BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+	}
+	else
+	{
+		BitmapFNT::setColor(GRAYCOLOR);
+		BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+	}
 
 
 	if(nFilteredGames >= 1) //if(nBurnSelected >= 0)
@@ -332,30 +344,30 @@ void c_fbaRL::GameList_Frame()
 
 		hashmap_position = games[game_ord_id]->nSize;
 
-		snprintf(txt,sizeof(txt)," TITLE:       %s", FBADRV->szTitle);
+		snprintf(txt,sizeof(txt)," TITLE: %s", FBADRV->szTitle);
 
 		if (nFrameStep == 0)
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 		}
 		else
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 		}
-		EasyTTFont::print(txt,78);
+		BitmapFNT::print(txt,58);
 		yPos += yPosDiff;
 
 		snprintf(txt,sizeof(txt)," ROMSET:      %s  -  PARENT:      %s",
                     games[game_ord_id]->name,games[nBurnSelected]->parent_name);
 		if (nFrameStep == 0)
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 		}
 		else
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 		}
-		EasyTTFont::print(txt);
+		BitmapFNT::print(txt);
 
 		yPos += yPosDiff;
 
@@ -363,13 +375,13 @@ void c_fbaRL::GameList_Frame()
 		snprintf(txt,sizeof(txt)," COMPANY:     %s", games[game_ord_id]->company);
 		if (nFrameStep == 0)
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 		}
 		else
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 		}
-		EasyTTFont::print(txt);
+		BitmapFNT::print(txt);
 
 		yPos += yPosDiff;
 
@@ -377,13 +389,13 @@ void c_fbaRL::GameList_Frame()
            games[game_ord_id]->year, games[game_ord_id]->subsystem);
 		if (nFrameStep == 0)
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 		}
 		else
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 		}
-		EasyTTFont::print(txt);
+		BitmapFNT::print(txt);
 
 		yPos += yPosDiff;
 
@@ -391,13 +403,13 @@ void c_fbaRL::GameList_Frame()
                     games[game_ord_id]->players,games[nBurnSelected]->resolution,games[game_ord_id]->aspectratio);
 		if (nFrameStep == 0)
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 		}
 		else
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 		}
-		EasyTTFont::print(txt);
+		BitmapFNT::print(txt);
 
 		yPos += yPosDiff;
 
@@ -409,32 +421,32 @@ void c_fbaRL::GameList_Frame()
                 snprintf(txt,sizeof(txt)," PATH: %s",FBAGAMES->szPath);
 				if (nFrameStep == 0)
 				{
-					EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+					BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 				}
 				else
 				{
-					EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+					BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 				}
-				EasyTTFont::print(txt);
+				BitmapFNT::print(txt, 58);
 
         }
         yPos += yPosDiff + 0.015;
 
         if (app.state.displayMode.resolution == 1)
-            xPos = xPos + 0.20;
+            xPos = xPos + 0.15;
         else
-            xPos = xPos + 0.23;
+            xPos = xPos + 0.18;
         lv2syscall1(352, (uint64_t) &meminfo);
         snprintf(txt,sizeof(txt),"MEMORY TOTAL: %d - AVAIL: %d", meminfo.total / 1024, meminfo.avail / 1024);
 		if (nFrameStep == 0)
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
+			BitmapFNT::setPosition((int)(xPos * display_width) + 1, (int)(yPos * display_height) + 1);
 		}
 		else
 		{
-			EasyTTFont::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
+			BitmapFNT::setPosition((int)(xPos * display_width), (int)(yPos * display_height));
 		}
-		EasyTTFont::print(txt);
+		BitmapFNT::print(txt);
 		yPos += yPosDiff;
 	}
 

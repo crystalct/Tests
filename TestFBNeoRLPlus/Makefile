@@ -17,10 +17,10 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/ftp source/easyttfont_renderer
-DATA		:=	data data/easyttfont_renderer
-SHADERS		:=	shaders shaders/easyttfont_renderer
-INCLUDES	:=	include include/easyttfont_renderer
+SOURCES		:=	source source/ftp source/bitmapfnt_renderer
+DATA		:=	data data/bitmapfnt_renderer
+SHADERS		:=	shaders shaders/bitmapfnt_renderer
+INCLUDES	:=	include include/bitmapfnt_renderer
 
 TITLE		:=	RSX Test - PSL1GHT
 APPID		:=	RSX00003

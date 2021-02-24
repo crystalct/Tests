@@ -1,16 +1,17 @@
 {
   "ExpandedNodes": [
     "",
-    "\\rsx_Basic_Wallpaper2",
-    "\\rsx_Basic_Wallpaper2\\source",
+    "\\bitmapFNT_renderer",
+    "\\bitmapFNT_renderer\\include",
+    "\\bitmapFNT_renderer\\shaders",
+    "\\bitmapFNT_renderer\\source",
+    "\\bitmap_font",
+    "\\rsxtest_dl",
+    "\\rsxtest_dl\\include",
+    "\\rsxtest_dl\\source",
     "\\TestFBNeoRLPlus",
-    "\\TestFBNeoRLPlus\\data",
-    "\\TestFBNeoRLPlus\\data\\easyttfont_renderer",
-    "\\TestFBNeoRLPlus\\include",
-    "\\TestFBNeoRLPlus\\include\\easyttfont_renderer",
-    "\\TestFBNeoRLPlus\\source",
-    "\\TestFBNeoRLPlus\\source\\easyttfont_renderer"
+    "\\TestFBNeoRLPlus\\shaders"
   ],
-  "SelectedNode": "\\TestFBNeoRLPlus\\include\\easyttfont_renderer\\easyttfont.h",
+  "SelectedNode": "\\rsxtest_dl\\Makefile",
   "PreviewInSolutionExplorer": false
 }

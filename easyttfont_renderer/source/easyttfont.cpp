@@ -5,7 +5,7 @@
 
 #define NUM_VERTS_PER_GLYPH				4
 
-
+extern u32* texture_buffer_app;
 
 FT_Library EasyTTFont::freetype;
 FT_Face EasyTTFont::face;
@@ -186,6 +186,7 @@ inline u32 EasyTTFont::get_ttf_char(const char* string, u32* next_char, u32* ttf
 	u16* bitmap = ttf_font_datas[l].text;
 	rsxAddressToOffset((u8*)bitmap, &ttf_font_datas[l].offset);
 
+	texture_buffer_app = (u32*)bitmap;
 	// building the character
 
 	if (!(ttf_font_datas[l].flags & 1)) {

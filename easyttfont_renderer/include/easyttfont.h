@@ -73,7 +73,7 @@ public:
 	int TTFLoadFont(char* path, void* from_memory, int size_from_memory);
 	void TTFUnloadFont();
 	u16* init_ttf_table(u16* texture);
-	/*static void getExtents(const char *pszText, s32 *pWidth, s32 *pHeight, s32 srcWidth);*/
+	static inline u32 get_ttf_char(const char* string, u32* next_char, u32* ttf_y_start, u16* ttf_width, u16* ttf_height);
 
 	static inline void setScreenRes(s32 x, s32 y)
 	{
@@ -119,7 +119,7 @@ public:
 	};
 
 private:
-	static inline u32 get_ttf_char(const char* string, u32* next_char, u32* ttf_y_start, u16* ttf_width, u16* ttf_height);
+	
 	static void print(const char *pszText, s32 count);
 	
 

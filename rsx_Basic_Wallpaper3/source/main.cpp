@@ -19,12 +19,15 @@
 #include "mesh.h"
 #include "geometry.h"
 #include "rsxutil.h"
+#include <rsxbitmapfntrenderer.h>
 #include <rsxeasyttfontrenderer.h>
+
 
 #include "diffuse_specular_shader_vpo.h"
 #include "scanlines_fpo.h"
 
-RSXEasyTTFontRenderer* easyTTFontRenderer;
+RSXBitmapFNTRenderer* easyTTFontRenderer;
+RSXEasyTTFontRenderer* easyTTFontRenderer2;
 
 
 typedef struct
@@ -41,7 +44,7 @@ u32 running = 0;
 u32 fp_offset;
 u32 *fp_buffer;
 
-u32* texture_buffer;
+u32* texture_buffer, *texture_buffer_app;
 u32 texture_offset;
 
 pngData* png;
@@ -105,6 +108,11 @@ static void init_texture()
 	u8* buffer;
 	
 	//Init png texture
+	u32 next_char; 
+	u32 ttf_y_start; 
+	u16 ttf_width;
+	u16 ttf_height;
+	
 	
 	const u8* data = (u8*)png->bmp_out;
 	texture_buffer = (u32*)rsxMemalign(128, png->pitch * png->height );
@@ -116,6 +124,7 @@ static void init_texture()
 	
 	buffer = (u8*)texture_buffer;
 	memcpy(texture_buffer, data, png->pitch * png->height );
+	
 }
 
 
@@ -130,7 +139,7 @@ static void setTexture(u32 textureUnit)
 
 	rsxInvalidateTextureCache(context, GCM_INVALIDATE_TEXTURE);
 
-	texture.format = (GCM_TEXTURE_FORMAT_A8R8G8B8 | GCM_TEXTURE_FORMAT_LIN);
+	texture.format = (GCM_TEXTURE_FORMAT_A4R4G4B4 | GCM_TEXTURE_FORMAT_LIN);
 	texture.mipmap = 1;
 	texture.dimension = GCM_TEXTURE_DIMS_2D;
 	texture.cubemap = GCM_FALSE;
@@ -291,7 +300,7 @@ void drawFrame()
 	//tex.depth = 1;
 	//tex.pitch = 100 * 1;
 	//tex.location = GCM_LOCATION_RSX;
-	//tex.offset = texture_offset;//get_ttf_char("g", &app, &a, &b, &c);
+	//tex.offset = texture_offset;//get_fnt_char("g", &app, &a, &b, &c);
 	////printf("Y_start: %d, w: %d, h: %d\n", a, b, c);
 	//rsxLoadTexture(context, textureUnit->index, &tex);
 
@@ -323,7 +332,8 @@ int main(int argc,const char *argv[])
 
 	init_screen(host_addr,HOSTBUFFER_SIZE);
 	
-	easyTTFontRenderer = new RSXEasyTTFontRenderer(context);
+	easyTTFontRenderer = new RSXBitmapFNTRenderer(context);
+	easyTTFontRenderer2 = new RSXEasyTTFontRenderer(context);
 	ioPadInit(7);
 
 	//Init background Image
@@ -334,12 +344,16 @@ int main(int argc,const char *argv[])
 	quad = createQuad(Point3(0.0, 0.0, 0), Point3(1.0, 1.0, 0), Point3(0.0, 1.0, 0), Point3(1.0, 0.0, 0));
 	quad2 = createQuad(Point3(0.0, 0.0, 0), Point3(0.05, 0.06667, 0), Point3(0.0, 0.06667, 0), Point3(0.05, 0.0, 0));
 
+	EasyTTFont::init();
+	EasyTTFont::setScreenRes(display_width, display_height);
 
 	init_shader();
 	init_texture();
 
-	EasyTTFont::init();
-	EasyTTFont::setScreenRes(display_width, display_height);
+	BitmapFNT::init();
+	BitmapFNT::setScreenRes(display_width, display_height);
+
+	
 
 	atexit(program_exit_callback);
 	sysUtilRegisterCallback(0,sysutil_exit_callback,NULL);
@@ -372,82 +386,68 @@ int main(int argc,const char *argv[])
 		int ypos = 25;
 		int xpos = 12;
 
-		
-		EasyTTFont::setPosition(xpos+1, ypos+1);
+		/*EasyTTFont::setPosition(xpos, ypos);
 		EasyTTFont::setDimension(32, 32);
-		EasyTTFont::setColor(1.0f, 0.0f, 0.0f, 1.0f);
+		EasyTTFont::setColor(0.4f, 1.0f, 0.8f, 1.0f);
 		EasyTTFont::print("Gerpijqy成成PA成 mangia pane a tradimento");
-		
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::setColor(0.5f, 1.0f, 0.5f, 1.0f);
-		
-		EasyTTFont::print("Gerpijqy成成PA成 mangia pane a tradimento");
-		ypos += 28;
 
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::setDimension(20, 24);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address"); 
+		EasyTTFont::setPosition(xpos + 1, ypos + 45);
+		EasyTTFont::setDimension(14, 14);
+		EasyTTFont::print("0123456789 Last Guardian: sys_mmapper_allocate_address");*/
+
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::setDimension(46, 35);
+		BitmapFNT::setColor(0.4f, 1.0f, 0.8f, 1.0f);
+		BitmapFNT::print("Gerpijqy成成PA成 mangia pane a tradimento");
+
+		/*EasyTTFont::setPosition(xpos + 1, ypos + 15);
+		EasyTTFont::setDimension(32, 32);
+		EasyTTFont::setColor(0.4f, 1.0f, 0.8f, 1.0f);
+		EasyTTFont::print("Gerpijqy成成PA成 mangia pane a tradimento");*/
+		
+		/*BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::setColor(0.5f, 1.0f, 0.5f, 1.0f);
+		
+		BitmapFNT::print("Gerpijqy成成PA成 mangia pane a tradimento");*/
+		ypos += 35;
+
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::setDimension(14, 14);
+		BitmapFNT::print("0123456789 Last Guardian: sys_mmapper_allocate_address"); 
 		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::setDimension(12, 16);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::setDimension(12, 16);
+		BitmapFNT::print("0123456789012345678901234567890123456789",25);
 		
 		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
 		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
 		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
-		ypos += 28;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::print("llllllllo sys_mmapper: sys_mmapper_allocate_address");
+
 		
 
 		
 		/*ypos = 54;
 		xpos = 11;
-		EasyTTFont::setPosition(xpos, ypos);
-		EasyTTFont::setColor(1.0f, 0.0f, 0.0f, 1.0f);
-		EasyTTFont::print("Hello  memory");
-		EasyTTFont::setPosition(xpos, ypos + 40);
-		EasyTTFont::print("llllllllo ");*/
+		BitmapFNT::setPosition(xpos, ypos);
+		BitmapFNT::setColor(1.0f, 0.0f, 0.0f, 1.0f);
+		BitmapFNT::print("Hello  memory");
+		BitmapFNT::setPosition(xpos, ypos + 40);
+		BitmapFNT::print("llllllllo ");*/
 
 		flip();
 	}
 
 done:
     printf("rsxtest done...%lu\n",sizeof(f32));
+	BitmapFNT::shutdown();
 	EasyTTFont::shutdown();
 	program_exit_callback();
     return 0;
 }
+

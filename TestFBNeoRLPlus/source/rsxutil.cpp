@@ -9,7 +9,6 @@
 #include <sysutil/video.h>
 
 #include "rsxutil.h"
-#include "mesh.h"
 
 videoResolution vResolution;
 
@@ -255,7 +254,6 @@ void initDefaultStateCommands()
 
 void initScreen(u32 hostBufferSize)
 {
-    printf("hostBufferSize: %d\n", hostBufferSize);
     u32 zs_depth = 4;
     u32 color_depth = 4;
     u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_STATE_CB_SIZE + hostBufferSize));
@@ -290,7 +288,7 @@ void initScreen(u32 hostBufferSize)
        gcmSetDisplayBuffer(i, color_offset[i], color_pitch, display_width, display_height);
        gcmSetTileInfo(tileIndex, GCM_LOCATION_RSX, color_offset[i], bufferSize, color_pitch, GCM_COMPMODE_DISABLED, 0, 0);
        gcmBindTile(tileIndex);
-       printf("FB[%d]: %p (%08x) [%dx%d] %d\n", i, color_buffer[i], color_offset[i], display_width, display_height, color_pitch);
+       printf("fb[%d]: %p (%08x) [%dx%d] %d\n", i, color_buffer[i], color_offset[i], display_width, display_height, color_pitch);
     }
 
     bufferSize = rsxAlign(GCM_TILE_ALIGN_OFFSET, depthBufferSize);

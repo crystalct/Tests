@@ -2,16 +2,16 @@
   "ExpandedNodes": [
     "",
     "\\bitmapFNT_renderer",
-    "\\bitmapFNT_renderer\\include",
-    "\\bitmapFNT_renderer\\shaders",
     "\\bitmapFNT_renderer\\source",
     "\\bitmap_font",
     "\\rsxtest_dl",
     "\\rsxtest_dl\\include",
     "\\rsxtest_dl\\source",
+    "\\rsx_Basic_Wallpaper3",
+    "\\rsx_Basic_Wallpaper3\\source",
     "\\TestFBNeoRLPlus",
     "\\TestFBNeoRLPlus\\shaders"
   ],
-  "SelectedNode": "\\rsxtest_dl\\Makefile",
+  "SelectedNode": "\\TestFBNeoRLPlus\\fnt_print.h",
   "PreviewInSolutionExplorer": false
 }

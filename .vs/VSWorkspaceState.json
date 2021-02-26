@@ -1,17 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\bitmapFNT_renderer",
-    "\\bitmapFNT_renderer\\source",
-    "\\bitmap_font",
-    "\\rsxtest_dl",
-    "\\rsxtest_dl\\include",
-    "\\rsxtest_dl\\source",
-    "\\rsx_Basic_Wallpaper3",
-    "\\rsx_Basic_Wallpaper3\\source",
-    "\\TestFBNeoRLPlus",
-    "\\TestFBNeoRLPlus\\shaders"
+    "\\ps3_bitmap_fonts",
+    "\\ps3_bitmap_fonts\\include",
+    "\\ps3_bitmap_fonts\\libbdffnt",
+    "\\ps3_bitmap_fonts\\rsxtest_dl_new",
+    "\\ps3_bitmap_fonts\\rsxtest_dl_new\\include",
+    "\\ps3_bitmap_fonts\\rsxtest_dl_new\\source",
+    "\\ps3_bitmap_fonts\\sprites2D",
+    "\\ps3_bitmap_fonts\\sprites2D\\source",
+    "\\rsxtest_dl"
   ],
-  "SelectedNode": "\\TestFBNeoRLPlus\\fnt_print.h",
+  "SelectedNode": "\\ps3_bitmap_fonts\\include\\fonts_bitmap.h",
   "PreviewInSolutionExplorer": false
 }

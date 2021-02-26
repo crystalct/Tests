@@ -580,7 +580,7 @@ int main(int argc,const char *argv[])
 	P = transpose(Matrix4::perspective(DEGTORAD(45.0f),aspect_ratio,1.0f,3000.0f));
 
 	fnt_class alpha;
-	init_fnt(gGcmContext, display_width, display_height, 2, &alpha);
+	init_fnt(gGcmContext, display_width, display_height, NULL, 2, &alpha);
 
 	printf("Valore maxwidth: %d height: %d sXPos: %d - sLeftSafe: %d - sXRes: %d\n", alpha.fnt.maxwidth, alpha.fnt.height, alpha.sXPos, alpha.sLeftSafe, alpha.sXRes);
 
@@ -600,17 +600,17 @@ int main(int argc,const char *argv[])
 
         drawFrame();
 
-		alpha.setPosition(46, 35);
-		alpha.setDimension(46, 35);
-		alpha.setColor(0.4f, 1.0f, 0.8f, 1.0f);
-		alpha.printf("Gerpijqy成成PA成 mangia pane a tradimento: %d", 10);
+		setPosition_fnt(&alpha, 46, 35);
+		setDimension_fnt(&alpha, 46, 35);
+		setColor_fnt(&alpha, 0.4f, 1.0f, 0.8f, 1.0f);
+		printf_fnt(&alpha, "Gerpijqy成成PA成 mangia pane a tradimento: %d", 10);
 
         flip();
     }
 
 done:
     printf("rsxtest_dl done...\n");
-	alpha.shutdown(&alpha);
+	shutdown_fnt(&alpha);
     finish();
     return 0;
 }

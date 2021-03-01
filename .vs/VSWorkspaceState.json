@@ -1,16 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\ps3_bitmap_fonts",
-    "\\ps3_bitmap_fonts\\include",
-    "\\ps3_bitmap_fonts\\libbdffnt",
-    "\\ps3_bitmap_fonts\\rsxtest_dl_new",
-    "\\ps3_bitmap_fonts\\rsxtest_dl_new\\include",
-    "\\ps3_bitmap_fonts\\rsxtest_dl_new\\source",
-    "\\ps3_bitmap_fonts\\sprites2D",
-    "\\ps3_bitmap_fonts\\sprites2D\\source",
-    "\\rsxtest_dl"
+    "\\ps3_bitmap_fonts_def",
+    "\\ps3_bitmap_fonts_def\\include",
+    "\\ps3_bitmap_fonts_def\\libbdffnt",
+    "\\ps3_bitmap_fonts_def\\libbdffnt\\include",
+    "\\ps3_bitmap_fonts_def\\libbdffnt\\source",
+    "\\ps3_bitmap_fonts_def\\rsxtest_dl_new",
+    "\\ps3_bitmap_fonts_def\\rsxtest_dl_new\\source",
+    "\\rsx_Basic_Wallpaper3",
+    "\\rsx_Basic_Wallpaper3\\include"
   ],
-  "SelectedNode": "\\ps3_bitmap_fonts\\include\\fonts_bitmap.h",
+  "SelectedNode": "\\ps3_bitmap_fonts_def\\pkg",
   "PreviewInSolutionExplorer": false
 }

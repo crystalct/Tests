@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <malloc.h>
 #include "fonts_bitmap.h"
-#include "mesh.h"
+//#include "mesh.h"
 
 
 #define BITMAPFNT_PRIMITIVE					GCM_TYPE_QUADS
@@ -28,12 +28,13 @@ void printf_fnt(fnt_class* fnt, const char* pszText, ...);
 u32 get_char_fnt(const char* string, u32 aa_level, u32* next_char, u16* fnt_width, fnt_class* fntc);
 void read_header_fnt(fnt_t* fnt_p);
 u8* get_bits_fnt(u32 ucs2, fnt_class* fntc);
-int load_file_fnt(const char* path, fnt_t* fnt_p);
+int load_file_fnt(const char* path, struct fnt_class* fntc);
 void load_mem_fnt(const void* ptr, fnt_class* fntc);
 u32 get_width_ucs2_fnt(u32 ucs2, fnt_class* fntc);
 u32 get_width_fnt(const char* str, int mx, fnt_class* fntc);
 u8* init_table_fnt(u8* texture, fnt_class* fntc);
-void shutdown_fnt(fnt_class* fntc);
+void initShader_fnt(fnt_class* fntc);
+
 
 char* utf8_utf16(u16* utf16, const char* utf8);
 void utf8_to_utf16(u16* utf16, const char* utf8);

@@ -6,11 +6,11 @@
     "\\ps3_bitmap_fonts_def\\libbdffnt",
     "\\ps3_bitmap_fonts_def\\libbdffnt\\include",
     "\\ps3_bitmap_fonts_def\\libbdffnt\\source",
-    "\\ps3_bitmap_fonts_def\\rsxtest_dl_new",
-    "\\ps3_bitmap_fonts_def\\rsxtest_dl_new\\source",
+    "\\ps3_bitmap_fonts_def\\sample",
+    "\\ps3_bitmap_fonts_def\\sample\\source",
     "\\rsx_Basic_Wallpaper3",
     "\\rsx_Basic_Wallpaper3\\include"
   ],
-  "SelectedNode": "\\ps3_bitmap_fonts_def\\rsxtest_dl_new\\source\\font.c",
+  "SelectedNode": "\\ps3_bitmap_fonts_def\\sample\\source\\main.cpp",
   "PreviewInSolutionExplorer": false
 }

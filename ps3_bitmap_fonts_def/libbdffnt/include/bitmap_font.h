@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <malloc.h>
 #include "fonts_bitmap.h"
-//#include "mesh.h"
 
 
 #define BITMAPFNT_PRIMITIVE					GCM_TYPE_QUADS
@@ -15,7 +14,7 @@
 
 #define BITMAPFNT_TAB_SIZE					4
 #define BITMAPFNT_MAX_CHAR_COUNT			1024 //max char per frame
-#define BITMAPFNT_DEFAULT_SAFE_AREA			40
+#define BITMAPFNT_DEFAULT_SAFE_AREA			00
 
 #define MAX_STR								2048
 
@@ -32,7 +31,7 @@ int load_file_fnt(const char* path, struct fnt_class* fntc);
 void load_mem_fnt(const void* ptr, fnt_class* fntc);
 u32 get_width_ucs2_fnt(u32 ucs2, fnt_class* fntc);
 u32 get_width_fnt(const char* str, int mx, fnt_class* fntc);
-u8* init_table_fnt(u8* texture, fnt_class* fntc);
+u8* init_table_fnt(u8* texture, fnt_class* fntc, u8 i);
 void initShader_fnt(fnt_class* fntc);
 
 

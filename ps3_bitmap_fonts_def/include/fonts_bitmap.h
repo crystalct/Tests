@@ -5,15 +5,11 @@
 #include <rsx/rsx.h>
 #include <stdarg.h>
 
-#ifndef MAX_CHARS_FNT
-#define MAX_CHARS_FNT			1600  //max char per session
-#endif
-#ifndef RSX_FNT_MEM
-#define RSX_FNT_MEM				64		//Memory in MByte for font textures
-#endif
-#ifndef RSX_LABEL_ID
-#define RSX_LABEL_ID			254
-#endif
+#define MAX_CHARS_FNT			1600  //max char per session, unchangable
+#define MAX_N_FNT				6  //max fonts number, unchangeable
+#define RSX_LABEL_ID			254 // label rendering ID, unchangeable
+#define BIT0_FIRST_PIXEL 0
+#define BIT7_FIRST_PIXEL 1
 
 typedef struct fnt_dyn {
 	u32 fnt;
@@ -27,21 +23,22 @@ typedef struct fnt_dyn {
 } fnt_dyn;
 
 typedef struct fnt_t  {
-	uint16_t maxwidth;
-	uint16_t height;
-	uint16_t ascent;
-	uint16_t pad;
-	uint32_t firstchar;
-	uint32_t size;
-	uint32_t defaultchar;
-	uint32_t nbits;
-	uint32_t noffset;
-	uint32_t nwidth;
-	const uint8_t* bits;
-	const uint32_t* offset;
-	const uint8_t* width;
-	uint32_t long_offset;
-	uint32_t file_flag;
+	u8 isBDF;
+	u16 maxwidth;
+	u16 height;
+	u16 ascent;
+	u16 pad;
+	u32 firstchar;
+	u32 size;
+	u32 defaultchar;
+	u32 nbits;
+	u32 noffset;
+	u32 nwidth;
+	const u8* bits;
+	const u32* offset;
+	const u8* width;
+	u32 long_offset;
+	u32 file_flag;
 	void* fnt_ptr;
 } fnt_t;
 
@@ -63,27 +60,29 @@ typedef struct Color
 
 typedef struct fnt_class
 {
-	fnt_t fnt;
+	fnt_t fnt[MAX_N_FNT];
+	u8 number_of_fonts;
+	u8 current_font;
 	s32 sXPos;
 	s32 sYPos;
 	f32 sR;
 	f32 sG;
 	f32 sB;
 	f32 sA;
-	u8 gly_w;
-	u8 gly_h;
+	u8 gly_w[MAX_N_FNT];
+	u8 gly_h[MAX_N_FNT];
 	s32 sXRes;
 	s32 sYRes;
 	s32 sLeftSafe;
 	s32 sRightSafe;
 	s32 sTopSafe;
 	s32 sBottomSafe;
-	u32 aa_level;
-	u32 fnt_ux;
-	u32 fnt_uy;
+	u8 aa_level[MAX_N_FNT];
+	u32 fnt_ux[MAX_N_FNT];
+	u32 fnt_uy[MAX_N_FNT];
 	u32 r_use;
 	u32* ntex_off;
-	fnt_dyn fnt_font_datas[MAX_CHARS_FNT];
+	fnt_dyn fnt_font_datas[MAX_N_FNT][MAX_CHARS_FNT];
 
 	gcmContextData* mContext;
 	u8* texture_mem;		//fnt_textures
@@ -133,7 +132,7 @@ typedef struct fnt_class
 	void (*initShader)(struct fnt_class* fntc);
 	
 	void (*printStart)(struct fnt_class* fnt);
-	u8* (*init_table)(u8* texture, struct fnt_class* fnt);
+	u8* (*init_table)(u8* texture, struct fnt_class* fnt, u8 i);
 	u32(*get_char)(const char* string, u32 aa_level, u32* next_char, u16* fnt_width, struct fnt_class* fntc);
 	u32(*get_width)(const char* str, int mx, struct fnt_class* fntc);
 	u32(*get_width_ucs2)(u32 ucs2, struct fnt_class* fntc);
@@ -147,11 +146,22 @@ typedef struct fnt_class
 #ifdef __cplusplus
 extern "C" {
 #endif
-int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, const char* path, u32 aalevel, fnt_class* fntc);
+int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, const char* path, u32 mb_rsx_mem, u32 aalevel, fnt_class* fntc);
 void printn_fnt(fnt_class* fnt, const char* pszText, s32 count);
 void print_fnt(fnt_class* fnt, const char* pszText);
 void printf_fnt(fnt_class* fnt, const char* pszText, ...);
+int addfnt_from_file_fnt(fnt_class* fnt, const char* pszText, u8 aa_level);
+int addfnt_from_bitmap_array_fnt(fnt_class* fnt, u8* font, u8 first_char, u8 last_char, int w, int h, int bits_per_pixel, int byte_order, u8 aa_level);
 void shutdown_fnt(fnt_class* fntc);
+
+inline int SetCurrentFont_fnt(fnt_class* fnt, u8 i)
+{
+	if (i > fnt->number_of_fonts - 1)
+		return 1;
+
+	fnt->current_font = i;
+	return 0;
+}
 
 inline void setPosition_fnt(fnt_class* fntc, s32 x, s32 y)
 {
@@ -185,8 +195,8 @@ inline void getSafeArea_fnt(fnt_class* fntc, s32* pLeft, s32* pRight, s32* pTop,
 
 inline void setDimension_fnt(fnt_class* fntc, u32 w, u32 h)
 {
-	fntc->gly_w = w;
-	fntc->gly_h = h;
+	fntc->gly_w[fntc->current_font] = w;
+	fntc->gly_h[fntc->current_font] = h;
 }
 
 inline bool isPrintable_fnt(char c)

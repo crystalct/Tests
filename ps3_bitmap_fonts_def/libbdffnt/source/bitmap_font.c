@@ -14,7 +14,7 @@
  * u16      maxwidth    2           font max width in pixels				[4]
  * u16      height      2           font height in pixels					[6]
  * u16      ascent      2           font ascent (baseline) in pixels		[8]
- * char[2]   pad        2           depth of the font, 0=1bit and 1=4bit	[10]
+ * char[2]  pad			2           depth of the font, 0=1bit and 1=4bit	[10]
  * s32      firstchar   4           first character code in font			[12]
  * s32      defaultchar 4           default character code in font			[16]
  * s32      size        4           # characters in font					[20]
@@ -24,7 +24,7 @@
  * u8*      bits        nbits       pointer to image bits					[36]
  * u8       pad         0～3        image padded to 16-bit boundary			[36 + nbits]
  * u32*		offset      noffset x4	offset variable data					[36 + nbits + pad]
- * u8*    width       nwidth      width variable data						[36 + nbits + pad + offset + pad]
+ * u8*		width       nwidth      width variable data						[36 + nbits + pad + offset + pad]
  *
  */
 void read_header_fnt(fnt_t* fnt_p)
@@ -72,11 +72,108 @@ void read_header_fnt(fnt_t* fnt_p)
 
 void load_mem_fnt(const void* ptr, fnt_class* fntc)
 {
-	fntc->fnt.file_flag = 0;
+	fntc->fnt[fntc->current_font].file_flag = 0;
 
-	fntc->fnt.fnt_ptr = (void*)ptr;
+	fntc->fnt[fntc->current_font].fnt_ptr = (void*)ptr;
 
-	fntc->read_header(&fntc->fnt);
+	fntc->read_header(&(fntc->fnt[fntc->current_font]));
+}
+
+int addfnt_from_file_fnt(fnt_class* fnt, const char* path, u8 aa_level)
+{
+	if (fnt->number_of_fonts == MAX_N_FNT)
+		return 1;
+
+	fnt->number_of_fonts++;
+	int i = fnt->current_font;
+	fnt->current_font = fnt->number_of_fonts - 1;
+	int ret;
+	ret = load_file_fnt(path, fnt);
+	fnt->current_font = i;
+	
+	if (ret)
+	{
+		fnt->number_of_fonts--;
+		return 1;
+	}
+	i = fnt->number_of_fonts - 1;
+	fnt->fnt[i].isBDF = 1;
+	fnt->fnt_ux[i] = fnt->fnt[i].maxwidth;
+	fnt->fnt_uy[i] = fnt->fnt[i].height;
+	fnt->next_mem = (u8*)fnt->init_table((u8*)fnt->next_mem, fnt, i);
+	fnt->aa_level[i] = aa_level;
+	return 0;
+}
+
+int addfnt_from_bitmap_array_fnt(fnt_class* fnt, u8* font, u8 first_char, u8 last_char, int w, int h, int bits_per_pixel, int byte_order, u8 aa_level)
+{
+	if (fnt->number_of_fonts == MAX_N_FNT)
+		return 1;
+
+	u8* texture;
+	fnt->number_of_fonts++;
+	int i = fnt->number_of_fonts - 1;
+	fnt->fnt_ux[i] = w;
+	fnt->gly_w[i] = w;
+	fnt->fnt_uy[i] = h;
+	fnt->gly_h[i] = h;
+	fnt->fnt[i].firstchar = first_char;
+	fnt->fnt[i].noffset = last_char;
+	fnt->fnt[i].isBDF = 0;
+	texture = fnt->next_mem;
+	
+	int n, a, b;
+	u8 *tmp;
+	u8 j;
+	
+	for (n = 0; n < first_char; n++) {
+		memset(&(fnt->fnt_font_datas[i][n]), 0, sizeof(fnt_dyn));
+		fnt->fnt_font_datas[i][n].text = texture;
+	}
+	memset((void*)texture, 0, first_char);
+	texture += first_char;
+	
+	for (n = first_char; n < last_char; n++) {
+		memset(&(fnt->fnt_font_datas[i][n]), 0, sizeof(fnt_dyn));
+		fnt->fnt_font_datas[i][n].text = texture;
+		tmp = texture;
+		
+		for (a = 0; a < h; a++) {
+			for (b = 0; b < w; b++) {
+
+				j = font[(b * bits_per_pixel) / 8];
+
+				if (byte_order)
+					j = (j << ((b & (7 / bits_per_pixel)) * bits_per_pixel)) >> (8 - bits_per_pixel);
+				else
+					j >>= (b & (7 / bits_per_pixel)) * bits_per_pixel;
+
+				j = (j & ((1 << bits_per_pixel) - 1)) * 255 / ((1 << bits_per_pixel) - 1);
+
+				if (j) {
+					j >>= 4;
+					if (j == 0xf || (j >=0x7 && aa_level > 0) || (j >= 0x3 && aa_level > 1))
+							*tmp = (j << 4) | 0xf;
+				}
+				else {
+
+					*tmp = 0x0; 
+				}
+				
+				tmp++;
+
+			}
+
+			font += (w * bits_per_pixel) / 8;
+
+		}
+
+		texture += w * h;
+	}
+
+	fnt->next_mem = texture;
+	
+	return 0;
 }
 
 int load_file_fnt(const char* path, struct fnt_class* fntc)
@@ -95,19 +192,19 @@ int load_file_fnt(const char* path, struct fnt_class* fntc)
 		return 1; // Err.
 	fread(buf, 1, fsize, f);
 	fclose(f);
-	fntc->fnt.file_flag = 1;
-	fntc->fnt.fnt_ptr = buf;
+	fntc->fnt[fntc->current_font].file_flag = 1;
+	fntc->fnt[fntc->current_font].fnt_ptr = buf;
 
-	fntc->read_header(&fntc->fnt);
+	fntc->read_header(&(fntc->fnt[fntc->current_font]));
 	return 0;
 }
 
 void free_mem_fnt(fnt_class* fntc)
 {
 
-	if (fntc->fnt.file_flag == 1) {
-		free(fntc->fnt.fnt_ptr);
-		fntc->fnt.fnt_ptr = NULL;
+	if (fntc->fnt[fntc->current_font].file_flag == 1) {
+		free(fntc->fnt[fntc->current_font].fnt_ptr);
+		fntc->fnt[fntc->current_font].fnt_ptr = NULL;
 	}
 }
 
@@ -125,17 +222,16 @@ void printStart_fnt(fnt_class* fntc)
 
 }
 
-u8* init_table_fnt(u8* texture, fnt_class* fntc)
+u8* init_table_fnt(u8* texture, fnt_class* fntc, u8 i)
 {
 	int n;
-
 	fntc->r_use = 0;
-	for (n = 0; n < MAX_CHARS_FNT; n++) {
-		memset(&fntc->fnt_font_datas[n], 0, sizeof(fnt_dyn));
-		fntc->fnt_font_datas[n].text = texture;
+		for (n = 0; n < MAX_CHARS_FNT; n++) {
+			memset(&(fntc->fnt_font_datas[i][n]), 0, sizeof(fnt_dyn));
+			fntc->fnt_font_datas[i][n].text = texture;
 
-		texture += fntc->fnt_ux * fntc->fnt_uy;
-	}
+			texture += fntc->fnt_ux[i] * fntc->fnt_uy[i];
+		}
 
 	return texture;
 
@@ -207,6 +303,14 @@ u32 get_char_fnt(const char* string, u32 aa_level, u32* next_char, u16* fnt_widt
 {
 	int l, n, m;
 	
+	if (!fntc->fnt[fntc->current_font].isBDF)
+	{
+		u8* vram = fntc->fnt_font_datas[fntc->current_font][(u8)string[0]].text;
+		rsxAddressToOffset(vram, &fntc->fnt_font_datas[fntc->current_font][(u8)string[0]].offset);
+		*fnt_width = (u16)fntc->fnt_ux[fntc->current_font];
+		return fntc->fnt_font_datas[fntc->current_font][(u8)string[0]].offset;
+	}
+
 	u32 fnt_char = 0;
 	u8* ustring = (u8*)string;
 
@@ -263,30 +367,30 @@ u32 get_char_fnt(const char* string, u32 aa_level, u32* next_char, u16* fnt_widt
 		int rel = 0;
 
 		for (n = 128; n < MAX_CHARS_FNT; n++) {
-			if (!(fntc->fnt_font_datas[n].flags & 1)) m = n;
+			if (!(fntc->fnt_font_datas[fntc->current_font][n].flags & 1)) m = n;
 
-			if ((fntc->fnt_font_datas[n].flags & 3) == 1) {
-				int trel = fntc->r_use - fntc->fnt_font_datas[n].r_use;
+			if ((fntc->fnt_font_datas[fntc->current_font][n].flags & 3) == 1) {
+				int trel = fntc->r_use - fntc->fnt_font_datas[fntc->current_font][n].r_use;
 				if (m == 0) { m = n; rel = trel; }
 				else if (rel > trel) { m = n; rel = trel; }
 
 			}
-			if (fntc->fnt_font_datas[n].fnt == fnt_char) break;
+			if (fntc->fnt_font_datas[fntc->current_font][n].fnt == fnt_char) break;
 		}
 
 		if (m == 0) m = 128;
 
 	}
 
-	if (n >= MAX_CHARS_FNT) { fntc->fnt_font_datas[m].flags = 0; l = m; }
+	if (n >= MAX_CHARS_FNT) { fntc->fnt_font_datas[fntc->current_font][m].flags = 0; l = m; }
 	else { l = n; }
 	
-	u8* vram = fntc->fnt_font_datas[l].text;
-	rsxAddressToOffset(vram, &fntc->fnt_font_datas[l].offset);
+	u8* vram = fntc->fnt_font_datas[fntc->current_font][l].text;
+	rsxAddressToOffset(vram, &fntc->fnt_font_datas[fntc->current_font][l].offset);
 
 	// building the character
 
-	if (!(fntc->fnt_font_datas[l].flags & 1)) {
+	if (!(fntc->fnt_font_datas[fntc->current_font][l].flags & 1)) {
 
 		index = fntc->get_bits(ucs, fntc);
 		vptr_tmp = vram;
@@ -299,7 +403,7 @@ u32 get_char_fnt(const char* string, u32 aa_level, u32* next_char, u16* fnt_widt
 			vptr = vptr_tmp;
 			pt = *index;
 
-			for (dy = 0; dy < fntc->fnt.height; dy++) /* y loop */
+			for (dy = 0; dy < fntc->fnt[fntc->current_font].height; dy++) /* y loop */
 			{
 				if (shift >= 8)
 				{
@@ -321,7 +425,7 @@ u32 get_char_fnt(const char* string, u32 aa_level, u32* next_char, u16* fnt_widt
 						*vptr = 0x1F;*/
 
 
-				vptr += fntc->fnt.maxwidth;
+				vptr += fntc->fnt[fntc->current_font].maxwidth;
 
 				shift++;
 				pt >>= 1;
@@ -333,18 +437,18 @@ u32 get_char_fnt(const char* string, u32 aa_level, u32* next_char, u16* fnt_widt
 		} /* x loop */
 
 		if (fnt_char != 0) {
-			fntc->fnt_font_datas[l].flags = 1;
-			fntc->fnt_font_datas[l].width = *fnt_width;
-			fntc->fnt_font_datas[l].fnt = fnt_char;
+			fntc->fnt_font_datas[fntc->current_font][l].flags = 1;
+			fntc->fnt_font_datas[fntc->current_font][l].width = *fnt_width;
+			fntc->fnt_font_datas[fntc->current_font][l].fnt = fnt_char;
 		}
 
 
 	}
 
 	// displaying the character
-	fntc->fnt_font_datas[l].flags |= 2; // in use
-	fntc->fnt_font_datas[l].r_use = fntc->r_use;
-	return fntc->fnt_font_datas[l].offset;
+	fntc->fnt_font_datas[fntc->current_font][l].flags |= 2; // in use
+	fntc->fnt_font_datas[fntc->current_font][l].r_use = fntc->r_use;
+	return fntc->fnt_font_datas[fntc->current_font][l].offset;
 }
 
 u8* get_bits_fnt(u32 ucs2, fnt_class* fntc)
@@ -352,24 +456,24 @@ u8* get_bits_fnt(u32 ucs2, fnt_class* fntc)
 	u8* bits;
 	u8* tmp;
 
-	if ((ucs2 < fntc->fnt.firstchar) || (ucs2 >= fntc->fnt.firstchar + fntc->fnt.size))
-		ucs2 = fntc->fnt.defaultchar;
+	if ((ucs2 < fntc->fnt[fntc->current_font].firstchar) || (ucs2 >= fntc->fnt[fntc->current_font].firstchar + fntc->fnt[fntc->current_font].size))
+		ucs2 = fntc->fnt[fntc->current_font].defaultchar;
 
-	ucs2 -= fntc->fnt.firstchar;
+	ucs2 -= fntc->fnt[fntc->current_font].firstchar;
 
-	if (fntc->fnt.long_offset == 0)
+	if (fntc->fnt[fntc->current_font].long_offset == 0)
 	{
-		tmp = (u8*)fntc->fnt.offset + ucs2 * 2;
-		bits = (u8*)fntc->fnt.bits + (fntc->fnt.offset ?
+		tmp = (u8*)fntc->fnt[fntc->current_font].offset + ucs2 * 2;
+		bits = (u8*)fntc->fnt[fntc->current_font].bits + (fntc->fnt[fntc->current_font].offset ?
 			(tmp[1] << 8) + tmp[0] :
-			(u8)(((fntc->fnt.height + 7) / 8) * fntc->fnt.maxwidth * ucs2));
+			(u8)(((fntc->fnt[fntc->current_font].height + 7) / 8) * fntc->fnt[fntc->current_font].maxwidth * ucs2));
 	}
 	else
 	{
-		tmp = (u8*)fntc->fnt.offset + ucs2 * 4;
-		bits = (u8*)fntc->fnt.bits + (fntc->fnt.offset ?
+		tmp = (u8*)fntc->fnt[fntc->current_font].offset + ucs2 * 4;
+		bits = (u8*)fntc->fnt[fntc->current_font].bits + (fntc->fnt[fntc->current_font].offset ?
 			(tmp[3] << 24) + (tmp[2] << 16) + (tmp[1] << 8) + tmp[0] :
-			(u8)(((fntc->fnt.height + 7) / 8) * fntc->fnt.maxwidth * ucs2));
+			(u8)(((fntc->fnt[fntc->current_font].height + 7) / 8) * fntc->fnt[fntc->current_font].maxwidth * ucs2));
 	}
 
 	return bits;
@@ -381,7 +485,6 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 	u32 deltaUTF;
 	u16 gly_Width;
 	u32 idx = 0;
-
 
 	offset = 0;
 	numPasses = (count / BITMAPFNT_MAX_CHAR_COUNT) + 1;
@@ -400,8 +503,8 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 				break;
 			if (isPrintable_fnt(pszText[offset + c])) {
 				// top left
-				fntc->ntex_off[idx] = fntc->get_char(pszText + offset + c, fntc->aa_level, &deltaUTF, &gly_Width, fntc);
-
+				fntc->ntex_off[idx] = fntc->get_char(pszText + offset + c, fntc->aa_level[fntc->current_font], &deltaUTF, &gly_Width, fntc);
+				
 				pPositions[numVerts].x = calcPos(fntc->sXPos + fntc->sLeftSafe, fntc->sXRes);
 				pPositions[numVerts].y = calcPos((float)fntc->sYPos + fntc->sTopSafe, fntc->sYRes) * -1.0f;
 				pPositions[numVerts].z = 0.0f;
@@ -416,7 +519,7 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 				numVerts++;
 
 				// top right
-				pPositions[numVerts].x = calcPos(fntc->sXPos + fntc->sLeftSafe + fntc->gly_w, fntc->sXRes);
+				pPositions[numVerts].x = calcPos(fntc->sXPos + fntc->sLeftSafe + fntc->gly_w[fntc->current_font], fntc->sXRes);
 				pPositions[numVerts].y = calcPos(fntc->sYPos + fntc->sTopSafe, fntc->sYRes) * -1.0f;
 				pPositions[numVerts].z = 0.0f;
 
@@ -430,8 +533,8 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 				numVerts++;
 
 				// bottom right
-				pPositions[numVerts].x = calcPos(fntc->sXPos + fntc->sLeftSafe + fntc->gly_w, fntc->sXRes);
-				pPositions[numVerts].y = calcPos((float)fntc->sYPos + fntc->sTopSafe + fntc->gly_h, fntc->sYRes) * -1.0f;
+				pPositions[numVerts].x = calcPos(fntc->sXPos + fntc->sLeftSafe + fntc->gly_w[fntc->current_font], fntc->sXRes);
+				pPositions[numVerts].y = calcPos((float)fntc->sYPos + fntc->sTopSafe + fntc->gly_h[fntc->current_font], fntc->sYRes) * -1.0f;
 				pPositions[numVerts].z = 0.0f;
 
 				pTexCoords[numVerts].s = 1.0f;
@@ -445,7 +548,7 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 
 				// bottom left
 				pPositions[numVerts].x = calcPos(fntc->sXPos + fntc->sLeftSafe, fntc->sXRes);
-				pPositions[numVerts].y = calcPos((float)fntc->sYPos + fntc->sTopSafe + fntc->gly_h, fntc->sYRes) * -1.0f;
+				pPositions[numVerts].y = calcPos((float)fntc->sYPos + fntc->sTopSafe + fntc->gly_h[fntc->current_font], fntc->sYRes) * -1.0f;
 				pPositions[numVerts].z = 0.0f;
 
 				pTexCoords[numVerts].s = 0.0f; 
@@ -458,17 +561,17 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 				numVerts++;
 
 				if (pszText[offset + c] == ' ')
-					fntc->sXPos += fntc->gly_w / 2;
+					fntc->sXPos += fntc->gly_w[fntc->current_font] / 2;
 				else
-					fntc->sXPos += (int)((gly_Width * (float)fntc->gly_w / fntc->fnt_ux) + 1.99f);
+					fntc->sXPos += (int)((gly_Width * (float)fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font]) + 1.99f);
 
 			}
 			else if (pszText[offset + c] == '\n') {
 				fntc->sXPos = 0;
-				fntc->sYPos += (fntc->fnt.height * (float)(fntc->gly_h / fntc->fnt_uy) + (fntc->fnt_uy - fntc->fnt.height) * (float)(fntc->gly_h / fntc->fnt_uy) + 1);
+				fntc->sYPos += (fntc->fnt[fntc->current_font].height * (float)(fntc->gly_h[fntc->current_font] / fntc->fnt_uy[fntc->current_font]) + (fntc->fnt_uy[fntc->current_font] - fntc->fnt[fntc->current_font].height) * (float)(fntc->gly_h[fntc->current_font] / fntc->fnt_uy[fntc->current_font]) + 1);
 			}
 			else if (pszText[offset + c] == '\t') {
-				fntc->sXPos += BITMAPFNT_TAB_SIZE * ((int)((gly_Width * (float)fntc->gly_w / fntc->fnt_ux) + (float)((fntc->gly_w / fntc->fnt_ux) * (fntc->fnt_ux - gly_Width) / 2) + 1.99));
+				fntc->sXPos += BITMAPFNT_TAB_SIZE * ((int)((gly_Width * (float)fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font]) + (float)((fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font]) * (fntc->fnt_ux[fntc->current_font] - gly_Width) / 2) + 1.99));
 			}
 			else if ((s8)pszText[offset + c] < 0) {
 				s32 iCode = (u8)pszText[offset + c] - 128;
@@ -479,12 +582,12 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 				}
 			}
 			else {
-			fntc->sXPos += (int)((gly_Width * (float)(fntc->gly_w / fntc->fnt_ux)) + (float)((fntc->gly_w / fntc->fnt_ux) * (fntc->fnt_ux - gly_Width) / 2) + 1.99);
+			fntc->sXPos += (int)((gly_Width * (float)(fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font])) + (float)((fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font]) * (fntc->fnt_ux[fntc->current_font] - gly_Width) / 2) + 1.99);
 			}
 
-			if (fntc->sXPos + (int)((gly_Width * (float)(fntc->gly_w / fntc->fnt_ux)) + (float)((fntc->gly_w / fntc->fnt_ux) * (fntc->fnt_ux - gly_Width) / 2) + 1.99) >= fntc->sXRes - (fntc->sLeftSafe + fntc->sRightSafe)) {
+			if (fntc->sXPos + (int)((gly_Width * (float)(fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font])) + (float)((fntc->gly_w[fntc->current_font] / fntc->fnt_ux[fntc->current_font]) * (fntc->fnt_ux[fntc->current_font] - gly_Width) / 2) + 1.99) >= fntc->sXRes - (fntc->sLeftSafe + fntc->sRightSafe)) {
 				fntc->sXPos = 0;
-				fntc->sYPos += (fntc->fnt.height * (fntc->gly_h / fntc->fnt_uy) + (fntc->fnt_uy - fntc->fnt.height) * (fntc->gly_h / fntc->fnt_uy) + 1);
+				fntc->sYPos += (fntc->fnt[fntc->current_font].height * (fntc->gly_h[fntc->current_font] / fntc->fnt_uy[fntc->current_font]) + (fntc->fnt_uy[fntc->current_font] - fntc->fnt[fntc->current_font].height) * (fntc->gly_h[fntc->current_font] / fntc->fnt_uy[fntc->current_font]) + 1);
 			}
 
 			idx++;
@@ -494,7 +597,7 @@ void printn_fnt(fnt_class* fntc, const char* pszText, s32 count)
 
 		offset += BITMAPFNT_MAX_CHAR_COUNT;
 
-		fntc->printPass(pPositions, pTexCoords, pColors, numVerts, fntc->ntex_off, fntc->fnt_ux, fntc->fnt_uy, fntc);
+		fntc->printPass(pPositions, pTexCoords, pColors, numVerts, fntc->ntex_off, fntc->fnt_ux[fntc->current_font], fntc->fnt_uy[fntc->current_font], fntc);
 
 
 	}
@@ -521,15 +624,20 @@ void shutdown_fnt(fnt_class* fntc)
 }
 
 
-int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, const char * path, u32 aalevel, fnt_class* fntc)
+int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, const char * path, u32 mb_rsx_mem, u32 aalevel, fnt_class* fntc)
 {
 	if (!context)
 		return 1;  //error
 	
+	
+
+	fntc->number_of_fonts = 1;
+	fntc->current_font = 0;
+
 	fntc->sLabelId = RSX_LABEL_ID;
 	fntc->sXRes = display_width;
 	fntc->sYRes = display_height;
-	fntc->aa_level = aalevel;
+	fntc->aa_level[0] = aalevel;
 	fntc->read_header = &read_header_fnt;
 	fntc->load_mem = &load_mem_fnt;
 	fntc->load_file = &load_file_fnt;
@@ -546,9 +654,17 @@ int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, con
 	fntc->initShader = &initShader_fnt;
 
 	fntc->mContext = context;
-	fntc->gly_w = BITMAPFNT_GLYPH_WIDTH;
-	fntc->gly_h = BITMAPFNT_GLYPH_HEIGHT;
+	fntc->gly_w[0] = BITMAPFNT_GLYPH_WIDTH;
+	fntc->gly_h[0] = BITMAPFNT_GLYPH_HEIGHT;
 	fntc->r_use = 0;
+
+	if (path)
+	{
+		if (fntc->load_file(path, fntc))
+			return 1;	//Error
+	}
+	else
+		fntc->load_mem(fnt35, fntc);
 	
 	fntc->sDefaultColors[0] = (Color){ .r = 0.f, .g = 0.f, .b = 0.f, .a = 1.f };	// black
 	fntc->sDefaultColors[1] = (Color){ .r = 0.f, .g = 0.f, .b = 1.f, .a = 1.f };	// blue
@@ -559,27 +675,18 @@ int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, con
 	fntc->sDefaultColors[6] = (Color){ .r = 1.f, .g = 1.f, .b = 0.f, .a = 1.f };	// yellow
 	fntc->sDefaultColors[7] = (Color){ .r = 1.f, .g = 1.f, .b = 1.f, .a = 1.f };	// white
 	
-
-	if (path)
-	{ 
-		if (fntc->load_file(path, fntc))
-			return 1;	//Error
-	}
-	else
-		fntc->load_mem(fnt35, fntc);
-	
-	fntc->fnt_ux = fntc->fnt.maxwidth;
-	fntc->fnt_uy = fntc->fnt.height;
+	fntc->fnt[0].isBDF = 1;
+	fntc->fnt_ux[0] = fntc->fnt[0].maxwidth;
+	fntc->fnt_uy[0] = fntc->fnt[0].height;
 
 	fntc->mLabel = (vu32*)gcmGetLabelAddress(fntc->sLabelId);
 	*fntc->mLabel = fntc->mLabelValue;
 	
-	fntc->texture_mem = (u8*)rsxMemalign(128, RSX_FNT_MEM * 1024 * 1024); // alloc RSX_FNT_MEM MByte of space for font textures
+	fntc->texture_mem = (u8*)rsxMemalign(128, mb_rsx_mem * 1024 * 1024); // alloc mb_rsx_mem MBytes of space for font textures
 
 	if (!fntc->texture_mem) return 1; // fail!
 
-	fntc->next_mem = (u8*)fntc->init_table((u8*)fntc->texture_mem, fntc);
-	
+	fntc->next_mem = (u8*)fntc->init_table((u8*)fntc->texture_mem, fntc, 0);
 	fntc->initShader(fntc);
 	
 	fntc->mPosIndex = rsxVertexProgramGetAttrib(fntc->mRSXVertexProgram, "position");
@@ -608,6 +715,7 @@ int init_fnt(gcmContextData* context, u32 display_width, u32 display_height, con
 	fntc->spColors[1] = (Color*) malloc(BITMAPFNT_MAX_CHAR_COUNT * NUM_VERTS_PER_GLYPH * sizeof(Color)); //new Color[BITMAPFNT_MAX_CHAR_COUNT * NUM_VERTS_PER_GLYPH];
 	fntc->ntex_off = (u32*) malloc(BITMAPFNT_MAX_CHAR_COUNT * sizeof(u32));
 	
+	
 	return 0;
 }
 
@@ -631,13 +739,13 @@ u32 get_width_ucs2_fnt(u32 ucs2, fnt_class* fntc)
 {
 	u16 width = 0;
 
-	if ((ucs2 < fntc->fnt.firstchar) || (ucs2 >= fntc->fnt.firstchar + fntc->fnt.size))
-		ucs2 = fntc->fnt.defaultchar;
+	if ((ucs2 < fntc->fnt[fntc->current_font].firstchar) || (ucs2 >= fntc->fnt[fntc->current_font].firstchar + fntc->fnt[fntc->current_font].size))
+		ucs2 = fntc->fnt[fntc->current_font].defaultchar;
 
-	if (fntc->fnt.nwidth != 0)
-		width = fntc->fnt.width[ucs2 - fntc->fnt.firstchar];
+	if (fntc->fnt[fntc->current_font].nwidth != 0)
+		width = fntc->fnt[fntc->current_font].width[ucs2 - fntc->fnt[fntc->current_font].firstchar];
 	else
-		width = fntc->fnt.maxwidth;
+		width = fntc->fnt[fntc->current_font].maxwidth;
 
 	return width;
 }

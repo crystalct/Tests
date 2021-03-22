@@ -47,14 +47,8 @@ int c_fbaRL::ResizeImage(pngData *png_in, void *TgtTexture, u32 TgtWidth, u32 Tg
     u32 FractPart0 = 0;
     int E0 = 0;
 	if(png_in->bmp_out){
-		//pngData *png_out = new pngData;
-		//png_out->bmp_out = (u32 *) malloc(TgtHeight*TgtWidth*sizeof(u32));
 		u32 *Source = (u32 *)(void *)png_in->bmp_out;
 		u32 *Target = (u32 *)TgtTexture;
-
-//		png_out->height = TgtHeight;
-//		png_out->width  = TgtWidth;
-//		png_out->pitch  = TgtWidth*4;
 
 		NumPixels0 = TgtHeight;
 		IntPart0 = (png_in->height / TgtHeight) * png_in->width;
@@ -78,7 +72,6 @@ int c_fbaRL::ResizeImage(pngData *png_in, void *TgtTexture, u32 TgtWidth, u32 Tg
 			}
 
 		}
-		//memset(TgtTexture, 33, TgtWidth * TgtHeight * sizeof(u32));
         return 0;
 	}
 	return 1;
@@ -98,43 +91,36 @@ void c_tex::Render(u16 x, u16 y, u16 w, u16 h)
 
 c_tex::c_tex(uint32_t _nTexture, uint32_t display)
 {
-    printf("Enter c_tex\n");
     png = NULL;
     pngSec = NULL;
-    //Min = new Minimum;
-    //IMG = new Image(Min);
     png = new pngData;
     u32* texture;
-    //char fileTexture[256];
     nTexture = _nTexture;
     uint32_t i = display * 7 + nTexture;
-    //printf("Bind texture: %d\n", nTexture);
+    printf("Bind texture: %d - i: %d\n", nTexture, i);
     bTextureOK = false;
     u32 w, h, x, y;
 
-    switch (i) {
-    case 7:
+    switch (nTexture) {
+    case 0:
         pngLoadFromBuffer(MAIN_MENU_1920x1080_PNG_bin, MAIN_MENU_1920x1080_PNG_bin_size, png);
         break;
-    case 8:
+    case 1:
         pngLoadFromBuffer(GAME_LIST_1920x1080_PNG_bin, GAME_LIST_1920x1080_PNG_bin_size, png);
         break;
-    case 9:
+    case 2:
         pngLoadFromBuffer(ZIP_INFO_1920x1080_PNG_bin, ZIP_INFO_1920x1080_PNG_bin_size, png);
         break;
-    case 10:
+    case 3:
         pngLoadFromBuffer(ROM_INFO_1920x1080_PNG_bin, ROM_INFO_1920x1080_PNG_bin_size, png);
         break;
-    case 11:
+    case 4:
         pngLoadFromBuffer(OPTIONS_MENU_1920x1080_PNG_bin, OPTIONS_MENU_1920x1080_PNG_bin_size, png);
         break;
-    case 12:
+    case 5:
         pngLoadFromBuffer(FILE_BROWSER_1920x1080_PNG_bin, FILE_BROWSER_1920x1080_PNG_bin_size, png);
         break;
  
-        //        case 20:
-        //            pngLoadFromBuffer(PREVIEW_1280x720_PNG_bin, PREVIEW_1280x720_PNG_bin_size, png);
-        //            break;
     }
     
     texture = (u32*)rsxMemalign(128, (png->height * png->pitch));
@@ -144,7 +130,6 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
     SAFE_FREE(png->bmp_out);
     png->bmp_out = texture;
     gcmAddressToOffset(texture, &pngBmpOffset);
-    printf("PngBmpOffset: %d\n", pngBmpOffset);
 
     switch (nTexture) {
         case TEX_MAIN_MENU:
@@ -167,8 +152,7 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             texture_dim[0].w = w;
             texture_dim[0].h = h;
 
-            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[0], 0, 0, w, h, MAX_WIDTH, MAX_HEIGHT);
-            
+           
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, 10, 4);
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
@@ -193,7 +177,6 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             texture_dim[2].w = w;
             texture_dim[2].h = h;
 
-            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[2], 0, 216, 96, 486, 1920, 1080);
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
                 texture_offset[2], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
 
@@ -205,7 +188,6 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             texture_dim[3].w = w;
             texture_dim[3].h = h;
 
-            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[3], 96, 216, 960, 486, 1920, 1080);
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
                 texture_offset[3], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
 
@@ -217,7 +199,6 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             texture_dim[4].w = w;
             texture_dim[4].h = h;
 
-            //getsubimage((u32*)png->bmp_out, (u32*)texture_buffer[4], 1056, 216, 864, 486, 1920, 1080);
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
                 texture_offset[4], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
 
@@ -267,7 +248,7 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
 
             break;
 
-        case SECTION_GAMELIST:
+        case TEX_GAME_LIST:
             nQuads = 6;
             
             quad[0] = createQuad(Point3(-0.9802, -0.6, 0), Point3(-0.4063, 0.2519, 0), Point3(-0.9802, 0.2519, 0), Point3(-0.4063, -0.6, 0));
@@ -277,23 +258,6 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             quad[4] = createQuad(Point3(-1.0, -1.0, 0), Point3(0.0, 0.0, 0), Point3(-1.0, 0.0, 0), Point3(0.0, -1.0, 0));
             quad[5] = createQuad(Point3(0.0, -1.0, 0), Point3(1.0, 0.0, 0),  Point3(0.0, 0.0, 0), Point3(1.0, -1.0, 0));
             
-            //memcpy(app.textures[SECTION_GAMELIST]->texture_buffer[0], app.textures[TEX_PREVIEW]->png->bmp_out, app.textures[TEX_PREVIEW]->png->pitch * app.textures[TEX_PREVIEW]->png->height);
-            /*rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
-                app.textures[TEX_PREVIEW]->texture_offset[0], 551 * 4, 0, 0,
-                app.textures[TEX_PREVIEW]->pngBmpOffset, app.textures[TEX_PREVIEW]->png->pitch, 0, 0,
-                app.textures[TEX_PREVIEW]->png->width, app.textures[TEX_PREVIEW]->png->height, 4);*/
-
-            /*w = app.textures[TEX_PREVIEW]->png->width; h = app.textures[TEX_PREVIEW]->png->height; x = 0; y = 0;
-            texture = (u32*)rsxMemalign(128, w * h * 4);
-            if (!texture) exit(0);
-            texture_buffer[0] = texture;
-            gcmAddressToOffset(texture, &texture_offset[0]);
-            texture_dim[0].w = w;
-            texture_dim[0].h = h;
-
-            memcpy(texture_buffer[0], app.textures[TEX_PREVIEW]->png->bmp_out, app.textures[TEX_PREVIEW]->png->pitch * app.textures[TEX_PREVIEW]->png->height);*/
-
-
             w = 960; h = 540; x = 0; y = 0;
             texture = (u32*)rsxMemalign(128, w * h * 4);
             if (!texture) exit(0);
@@ -341,7 +305,126 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
             rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
                 texture_offset[5], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
 
-            
+            break;
+ 
+        case TEX_OPTIONS:
+        case TEX_FILEBROWSER:
+        case TEX_ZIP_INFO:
+            nQuads = 4;
+
+            quad[0] = createQuad(Point3(-1.0, 0.0, 0), Point3(0.0, 1.0, 0), Point3(-1.0, 1.0, 0), Point3(0.0, 0.0, 0));
+            quad[1] = createQuad(Point3(0.0, 0.0, 0), Point3(1.0, 1.0, 0), Point3(0.0, 1.0, 0), Point3(1.0, 0.0, 0));
+            quad[2] = createQuad(Point3(-1.0, -1.0, 0), Point3(0.0, 0.0, 0), Point3(-1.0, 0.0, 0), Point3(0.0, -1.0, 0));
+            quad[3] = createQuad(Point3(0.0, -1.0, 0), Point3(1.0, 0.0, 0), Point3(0.0, 0.0, 0), Point3(1.0, -1.0, 0));
+
+
+            w = MAX_WIDTH/2; h = MAX_HEIGHT/2; x = 0; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[0] = texture;
+            gcmAddressToOffset(texture, &texture_offset[0]);
+            texture_dim[0].w = w;
+            texture_dim[0].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[0], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            x = MAX_WIDTH / 2; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[1] = texture;
+            gcmAddressToOffset(texture, &texture_offset[1]);
+            texture_dim[1].w = w;
+            texture_dim[1].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[1], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            x = 0; y = MAX_HEIGHT / 2;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[2] = texture;
+            gcmAddressToOffset(texture, &texture_offset[2]);
+            texture_dim[2].w = w;
+            texture_dim[2].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[2], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            x = MAX_WIDTH / 2; y = MAX_HEIGHT / 2;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[3] = texture;
+            gcmAddressToOffset(texture, &texture_offset[3]);
+            texture_dim[3].w = w;
+            texture_dim[3].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[3], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            break;
+
+        case TEX_ROM_INFO:
+           
+            nQuads = 5;
+            quad[0] = createQuad(Point3(0.3219, -0.0148, 0), Point3(0.8958, 0.6519, 0), Point3(0.3219, 0.6519, 0), Point3(0.8958, -0.0148, 0));
+            quad[1] = createQuad(Point3(-1.0, 0.0, 0), Point3(0.0, 1.0, 0), Point3(-1.0, 1.0, 0), Point3(0.0, 0.0, 0));
+            quad[2] = createQuad(Point3(0.0, 0.0, 0), Point3(1.0, 1.0, 0), Point3(0.0, 1.0, 0), Point3(1.0, 0.0, 0));
+            quad[3] = createQuad(Point3(-1.0, -1.0, 0), Point3(0.0, 0.0, 0), Point3(-1.0, 0.0, 0), Point3(0.0, -1.0, 0));
+            quad[4] = createQuad(Point3(0.0, -1.0, 0), Point3(1.0, 0.0, 0), Point3(0.0, 0.0, 0), Point3(1.0, -1.0, 0));
+
+
+            w = MAX_WIDTH / 2; h = MAX_HEIGHT / 2; x = 0; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[1] = texture;
+            gcmAddressToOffset(texture, &texture_offset[1]);
+            texture_dim[1].w = w;
+            texture_dim[1].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[1], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            x = MAX_WIDTH / 2; y = 0;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[2] = texture;
+            gcmAddressToOffset(texture, &texture_offset[2]);
+            texture_dim[2].w = w;
+            texture_dim[2].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[2], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            x = 0; y = MAX_HEIGHT / 2;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[3] = texture;
+            gcmAddressToOffset(texture, &texture_offset[3]);
+            texture_dim[3].w = w;
+            texture_dim[3].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[3], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+
+            x = MAX_WIDTH / 2; y = MAX_HEIGHT / 2;
+            texture = (u32*)rsxMemalign(128, w * h * 4);
+            if (!texture) exit(0);
+            texture_buffer[4] = texture;
+            gcmAddressToOffset(texture, &texture_offset[4]);
+            texture_dim[4].w = w;
+            texture_dim[4].h = h;
+
+            rsxSetTransferImage(gGcmContext, GCM_TRANSFER_LOCAL_TO_LOCAL,
+                texture_offset[4], w * 4, 0, 0, pngBmpOffset + (x + y * MAX_WIDTH) * 4, PITCH, 0, 0, w, h, 4);
+
+            break;
 
     }
 
@@ -491,6 +574,12 @@ int c_tex::BindSecTexture(char* pszPath)
             app.textures[TEX_GAME_LIST]->texture_buffer[1] = NULL;
         }
 
+        if (app.textures[TEX_ROM_INFO]->texture_buffer[0])
+        {
+            rsxFree(app.textures[TEX_ROM_INFO]->texture_buffer[0]);
+            app.textures[TEX_ROM_INFO]->texture_buffer[0] = NULL;
+        }
+
         //adjust aspect ratio of title image
         //if (pngSec->width < pngSec->height) {
         //    //quad[1] = createQuad(Point3(-0.9802, 0.3, 0), Point3(-0.4063, 0.9630, 0), Point3(-0.9802, 0.9630, 0), Point3(-0.4063, 0.3, 0));
@@ -513,6 +602,11 @@ int c_tex::BindSecTexture(char* pszPath)
             app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.9630, 0.0);
             app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.9630, 0.0);
             app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.3000, 0.0);
+            app.textures[TEX_ROM_INFO]->quad[0]->vertices[0].pos = Vector3(0.3219 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), -0.6519, 0.0);
+            app.textures[TEX_ROM_INFO]->quad[0]->vertices[1].pos = Vector3(0.8958 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.0148, 0.0);
+            app.textures[TEX_ROM_INFO]->quad[0]->vertices[2].pos = Vector3(0.3219 + ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), 0.0148, 0.0);
+            app.textures[TEX_ROM_INFO]->quad[0]->vertices[3].pos = Vector3(0.8958 - ((553.0 - (360.0 * pngSec->width / pngSec->height)) / 1920), -0.6519, 0.0);
+
         }
         else
         {
@@ -521,12 +615,20 @@ int c_tex::BindSecTexture(char* pszPath)
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063, 0.9630, 0.0);
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802, 0.9630, 0.0);
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063, 0.3000, 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[0].pos = Vector3(0.3219, -0.6519, 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[1].pos = Vector3(0.8958, 0.0148, 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[2].pos = Vector3(0.3219, 0.0148, 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[3].pos = Vector3(0.8958, -0.6519, 0.0);
             }
             else {
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[0].pos = Vector3(-0.9802, 0.3000 + ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[1].pos = Vector3(-0.4063, 0.9630 - ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[2].pos = Vector3(-0.9802, 0.9630 - ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
                 app.textures[TEX_GAME_LIST]->quad[1]->vertices[3].pos = Vector3(-0.4063, 0.3000 + ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[0].pos = Vector3(0.3219, -0.6519 + ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[1].pos = Vector3(0.8958, 0.0148 - ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[2].pos = Vector3(0.3219, 0.0148 - ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
+                app.textures[TEX_ROM_INFO]->quad[0]->vertices[3].pos = Vector3(0.8958, -0.6519 + ((360.0 - (553.0 * png->height / png->width)) / 1080), 0.0);
             }
         }
 
@@ -537,7 +639,12 @@ int c_tex::BindSecTexture(char* pszPath)
         app.textures[TEX_GAME_LIST]->texture_dim[1].w = pngSec->width;
         app.textures[TEX_GAME_LIST]->texture_dim[1].h = pngSec->height;
         memcpy(app.textures[TEX_GAME_LIST]->texture_buffer[1], pngSec->bmp_out, pngSec->pitch * pngSec->height);
-		
+        app.textures[TEX_ROM_INFO]->texture_buffer[0] = texture;
+        gcmAddressToOffset(texture, &(app.textures[TEX_ROM_INFO]->texture_offset[0]));
+        app.textures[TEX_ROM_INFO]->texture_dim[0].w = pngSec->width;
+        app.textures[TEX_ROM_INFO]->texture_dim[0].h = pngSec->height;
+        memcpy(app.textures[TEX_ROM_INFO]->texture_buffer[0], pngSec->bmp_out, pngSec->pitch * pngSec->height);
+
         return 1;
         /*if(pngTmp->width <= 0)
 		{

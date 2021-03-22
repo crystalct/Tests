@@ -67,24 +67,6 @@
 		SAFE_FREE(pszOption)							\
 	}
 
-/*static void DummyCallbackFunction(msgButton buttonType,void *usrData)
-{
- vs32 *p_action = (vs32 *)usrData;
-	switch(buttonType) {
-		case MSG_DIALOG_BTN_OK:
-			*p_action = 1;
-			break;
-		case MSG_DIALOG_BTN_NO:
-		case MSG_DIALOG_BTN_ESCAPE:
-			*p_action = 2;
-			break;
-		case MSG_DIALOG_BTN_NONE:
-			*p_action = -1;
-			break;
-		default:
-			break;
-	}
-}*/
 
 int c_fbaRL::ParseGameListCache()
 {
@@ -123,11 +105,11 @@ int c_fbaRL::ParseGameListCache()
                 strcpy(games[row]->sysmask, fba_drv->szSystemFilter);
                 //snprintf(games[row]->sysmask, 32, "%s", fba_drv->szSystemFilter);	// sys filter
                 snprintf(games[row]->company, 96, "%s", fba_drv->szCompany);	// sys filter
-                snprintf(games[row]->year, 5, "%s", fba_drv->szYear);	// sys filter
+                snprintf(games[row]->year, 8, "%s", fba_drv->szYear);	// sys filter
                 snprintf(games[row]->system, 32, "%s", fba_drv->szSystem);	// sys filter
                 snprintf(games[row]->subsystem, 32, "%s", fba_drv->szSubSystem);	// sys filter
-                snprintf(games[row]->resolution, 10, "%s", fba_drv->szResolution);	// sys filter
-                snprintf(games[row]->aspectratio, 7, "%s", fba_drv->szAspectRatio);	// sys filter
+                snprintf(games[row]->resolution, 11, "%s", fba_drv->szResolution);	// sys filter
+                snprintf(games[row]->aspectratio, 8, "%s", fba_drv->szAspectRatio);	// sys filter
                 //fbaRL->games[row]->parent_id = sqlite3_column_int(stmt, COL08);
                 games[row]->players = fba_drv->nMaxPlayers;
                 games[row]->def_core_id = fba_drv->nDefCoreID;
@@ -159,11 +141,11 @@ int c_fbaRL::ParseGameListCache()
                                     snprintf(games[row]->name, 128, "%s", fba_drv->szName);		// title
                                     snprintf(games[row]->sysmask, 32, "%s", fba_drv->szSystemFilter);	// sys filter
                                     snprintf(games[row]->company, 96, "%s", fba_drv->szCompany);	// sys filter
-                                    snprintf(games[row]->year, 5, "%s", fba_drv->szYear);	// sys filter
+                                    snprintf(games[row]->year, 8, "%s", fba_drv->szYear);	// sys filter
                                     snprintf(games[row]->system, 32, "%s", fba_drv->szSystem);	// sys filter
                                     snprintf(games[row]->subsystem, 32, "%s", fba_drv->szSubSystem);	// sys filter
-                                    snprintf(games[row]->resolution, 10, "%s", fba_drv->szResolution);	// sys filter
-                                    snprintf(games[row]->aspectratio, 7, "%s", fba_drv->szAspectRatio);	// sys filter
+                                    snprintf(games[row]->resolution, 11, "%s", fba_drv->szResolution);	// sys filter
+                                    snprintf(games[row]->aspectratio, 8, "%s", fba_drv->szAspectRatio);	// sys filter
                                     //fbaRL->games[row]->parent_id = sqlite3_column_int(stmt, COL08);
                                     games[row]->players = fba_drv->nMaxPlayers;
                                     games[row]->def_core_id = fba_drv->nDefCoreID;

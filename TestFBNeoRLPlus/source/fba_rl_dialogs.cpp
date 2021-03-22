@@ -31,9 +31,9 @@ static void RomScan2(void* arg) {
     sqlite3* mdb;
     char buf[256];
     char szMsg[256] = "";
-    sprintf(szMsg, "Scanning ROM(s), please wait...\n\nNotice: If you have MAME complete romset, be patient, the process could take a few minutes.");
+    snprintf(szMsg, sizeof(szMsg), "Scanning ROM(s), please wait...\n\nNotice: If you have MAME complete romset, be patient, the process could take a few minutes.");
     vs32 progressbar_action = 0;
-    char sql[256];
+    char sql[350];
     //char pszFilePath[256];
     u64 tsec1, tnsec1, tsec2, tnsec2;
     hashmap_map* gamesmap, * drvmap;
@@ -775,8 +775,8 @@ void c_fbaRL::DlgDisplayFrame()
 				stacksize, 
 				THREAD_JOINABLE, 
                 (char *)"RomScanThread");
-			//RomScan2();
-			//printf("Thread started, ret: %d\n",ret);
+			if (ret)
+			    printf("Thread romscan error!\n");
            
 			break;
 		}

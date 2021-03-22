@@ -448,13 +448,19 @@ void c_fbaRL::InitRomInfoMenu()
     char buff[258];
     char intxt[110];
     char *in, *out;
-	if (app.state.displayMode.resolution == 1)
-        nCols = 94;
-    else
-        nCols = 105;
+	
+	switch (app.state.displayMode.resolution) {
+		case 2:
+				nCols = 84;
+				break;
+		case 1:
+				nCols = 95;
+				break;
+	}
+
 	if(nFilteredGames < 1) return;
 
-	rominfo_menu = new c_Menu(38);
+	rominfo_menu = new c_Menu(34);
 
     hashmap_map *drvmap;
     FBA_DRV *fba_drv;

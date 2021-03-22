@@ -73,13 +73,13 @@ void _ScanROMs(uint64_t);
 #define STATUS_MISSING_CORE_4   41
 #define STATUS_MISSING_CORE_5   42
 
-#define SECTION_MAIN			0
-#define SECTION_GAMELIST		1
-#define SECTION_ZIPINFO			2
-#define SECTION_ROMINFO			3
-#define SECTION_HELP			4
-#define SECTION_OPTIONS			5
-#define SECTION_FILEBROWSER		6
+#define SECTION_MAIN			TEX_MAIN_MENU		
+#define SECTION_GAMELIST		TEX_GAME_LIST		
+#define SECTION_ZIPINFO			TEX_ZIP_INFO		
+#define SECTION_ROMINFO			TEX_ROM_INFO		
+#define SECTION_OPTIONS			TEX_OPTIONS			
+#define SECTION_FILEBROWSER		TEX_FILEBROWSER		
+#define SECTION_HELP			6			
 
 #define MENU_MAIN_GAMELIST		0
 #define MENU_MAIN_OPTIONS		1
@@ -204,7 +204,7 @@ public:
         company = (char*)malloc(256);
 		if (company == NULL)
             printf("MEMORY ERROR\n");
-        year = (char*)malloc(5);
+        year = (char*)malloc(8);
 		if (year == NULL)
             printf("MEMORY ERROR\n");
         system = (char*)malloc(256);
@@ -216,7 +216,7 @@ public:
         resolution = (char*)malloc(256);
 		if (resolution == NULL)
             printf("MEMORY ERROR\n");
-        aspectratio = (char*)malloc(7);
+        aspectratio = (char*)malloc(8);
 		if (aspectratio == NULL)
             printf("MEMORY ERROR\n");
 

@@ -343,32 +343,3 @@ void finish()
     while (lastBuffer != fbOnDisplay)
         usleep(100);
 }
-
-SMeshBuffer* createQuad(Point3 P1, Point3 P2, Point3 P3, Point3 P4)
-{
-    u32 i;
-    SColor col(255, 255, 255, 255);
-    SMeshBuffer* buffer = new SMeshBuffer();
-    const u16 u[6] = { 0,1,2,   0,3,1 };
-
-    buffer->indices.set_used(6);
-
-    for (i = 0; i < 6; i++) buffer->indices[i] = u[i];
-
-    buffer->vertices.set_used(4);
-
-    //                              position, normal,    texture
-    buffer->vertices[0] = S3DVertex(P1.getX(), P1.getY(), P1.getZ(), -1, -1, -1, col, 0, 1);
-    buffer->vertices[1] = S3DVertex(P2.getX(), P2.getY(), P2.getZ(), 1, -1, -1, col, 1, 0);
-    buffer->vertices[2] = S3DVertex(P3.getX(), P3.getY(), P3.getZ(), 1, 1, -1, col, 0, 0);
-    buffer->vertices[3] = S3DVertex(P4.getX(), P4.getY(), P4.getZ(), -1, 1, -1, col, 1, 1);
-
-
-    rsxAddressToOffset(&buffer->vertices[0].pos, &buffer->pos_off);
-    rsxAddressToOffset(&buffer->vertices[0].nrm, &buffer->nrm_off);
-    rsxAddressToOffset(&buffer->vertices[0].col, &buffer->col_off);
-    rsxAddressToOffset(&buffer->vertices[0].u, &buffer->uv_off);
-    rsxAddressToOffset(&buffer->indices[0], &buffer->ind_off);
-
-    return buffer;
-}

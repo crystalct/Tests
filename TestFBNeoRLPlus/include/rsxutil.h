@@ -2,8 +2,6 @@
 #define __RSXUTIL_H__
 
 #include <rsx/rsx.h>
-#include "mesh.h"
-
 
 #define DEFAULT_CB_SIZE						0x80000		// 512Kb default command buffer size
 #define HOST_STATE_CB_SIZE					0x10000		// 64Kb state command buffer size (used for resetting certain default states)
@@ -18,7 +16,7 @@
 #define BUFFER_IDLE							0
 #define BUFFER_BUSY							1
 
-#define FRAME_BUFFER_COUNT					4
+#define FRAME_BUFFER_COUNT					2
 
 extern u32 curr_fb;
 
@@ -44,6 +42,5 @@ void flip();
 void finish();
 
 void setRenderTarget(u32 index);
-SMeshBuffer* createQuad(Point3 P1, Point3 P2, Point3 P3, Point3 P4);
 
 #endif // __RSXUTIL_H__

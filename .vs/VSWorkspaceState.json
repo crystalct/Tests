@@ -1,16 +1,11 @@
 {
   "ExpandedNodes": [
     "",
-    "\\ps3_bitmap_fonts_def",
-    "\\ps3_bitmap_fonts_def\\include",
-    "\\ps3_bitmap_fonts_def\\libbdffnt",
-    "\\ps3_bitmap_fonts_def\\libbdffnt\\include",
-    "\\ps3_bitmap_fonts_def\\libbdffnt\\source",
-    "\\ps3_bitmap_fonts_def\\sample",
-    "\\ps3_bitmap_fonts_def\\sample\\source",
-    "\\rsx_Basic_Wallpaper3",
-    "\\rsx_Basic_Wallpaper3\\include"
+    "\\rsx_Basic_WallpaperOrig",
+    "\\rsx_Basic_WallpaperOrig\\source",
+    "\\TestFBNeoRLPlus",
+    "\\TestFBNeoRLPlus\\source"
   ],
-  "SelectedNode": "\\ps3_bitmap_fonts_def\\sample\\source\\main.cpp",
+  "SelectedNode": "\\TestFBNeoRLPlus\\source\\fba_rl_menu.cpp",
   "PreviewInSolutionExplorer": false
 }

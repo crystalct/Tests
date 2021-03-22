@@ -68,7 +68,8 @@
 #define DIR_NO_DOT_AND_DOTDOT	( DIR_SKIP_DOT | DIR_SKIP_DOTDOT )
 
 #define GCM_APP_WAIT_LABEL_INDEX		128
-#define HOSTBUFFER_SIZE		(32*1024*1024)
+
+#define HOSTBUFFER_SIZE		(64*1024*1024)
 
 extern "C" {
 	void memcpy16(void* dst, const void* src, size_t n);
@@ -153,6 +154,8 @@ public:
 	~c_tex();
 
 };
+
+SMeshBuffer* createQuad(Point3 P1, Point3 P2, Point3 P3, Point3 P4);
 
 using namespace std;
 

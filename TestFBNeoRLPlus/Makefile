@@ -7,6 +7,14 @@ ifeq ($(strip $(PSL1GHT)),)
 $(error "Please set PSL1GHT in your environment. export PSL1GHT=<path>")
 endif
 
+ICON0		:=	$(CURDIR)/pkg/ICON0.PNG
+SFOXML		:=	$(CURDIR)/sfo.xml
+
+SCETOOL_FLAGS	?=	--self-app-version=0001000000000000  --sce-type=SELF --compress-data=TRUE --self-add-shdrs=TRUE --skip-sections=FALSE --key-revision=1 \
+					--self-auth-id=1010000001000003 --self-vendor-id=01000002 --self-fw-version=0003004000000000 \
+					--self-ctrl-flags 4000000000000000000000000000000000000000000000000000000000000002 \
+					--self-cap-flags 00000000000000000000000000000000000000000000007B0000000100000000
+
 include $(PSL1GHT)/ppu_rules
 
 #---------------------------------------------------------------------------------
@@ -21,9 +29,10 @@ SOURCES		:=	source source/ftp source/bitmapfnt_renderer
 DATA		:=	data data/bitmapfnt_renderer
 SHADERS		:=	shaders shaders/bitmapfnt_renderer
 INCLUDES	:=	include include/bitmapfnt_renderer
+PKGFILES	:=	$(CURDIR)/pkg
 
-TITLE		:=	RSX Test - PSL1GHT
-APPID		:=	RSX00003
+TITLE		:=	FBNEORL Test
+APPID		:=	FBNEORLT1
 CONTENTID	:=	UP0001-$(APPID)_00-0000000000000000
 
 #---------------------------------------------------------------------------------
@@ -40,7 +49,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 LIBS	:=	-lsimdmath -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -lm -lsysmodule -lpngdec \
 			-lps3sqlite -lsysfs -lspu_sound -laudio -lspu_soundmodule -laudioplayer \
-			-lfreetype -lmpg123 -logg -lnet -lnetctl -lzip -lz
+			-lfreetype -lmpg123 -logg -lnet -lnetctl -lzip -lz -lbdffnt
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -119,7 +128,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).self $(OUTPUT).fake.self
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).self $(OUTPUT).fake.self $(PKGFILES)/USRDIR/RELOAD.SELF $(PKGFILES)/USRDIR/EBOOT.BIN
 
 #---------------------------------------------------------------------------------
 run:
@@ -127,6 +136,12 @@ run:
 
 #---------------------------------------------------------------------------------
 pkg:	$(BUILD) $(OUTPUT).pkg
+pkg2:	$(BUILD)
+pkg3:
+	@cp $(OUTPUT).self $(PKGFILES)/USRDIR/RELOAD.SELF
+pkg4:
+	@echo Pluto
+pkg5:	pkg
 
 #---------------------------------------------------------------------------------
 else

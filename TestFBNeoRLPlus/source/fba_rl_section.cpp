@@ -100,22 +100,32 @@ void c_fbaRL::MainMenu_Frame()
 	yPos		= 0.5885f;
 	yPosDiff	= 0.0400f;
 	
-	//BitmapFNT::setDimension(15, 16);
-	SetCurrentFont_fnt(&alpha, 2);
-	setDimension_fnt(&alpha, 16, 16);
+	switch (app.state.displayMode.resolution)
+	{
+		case VIDEO_RESOLUTION_1080:
+		case VIDEO_RESOLUTION_1600x1080:
+			SetCurrentFont_fnt(&alpha, 1);
+			setDimension_fnt(&alpha, alpha.fnt[1].maxwidth, alpha.fnt[1].height);
+			break;
+		case VIDEO_RESOLUTION_720:
+			SetCurrentFont_fnt(&alpha, 2);
+			setDimension_fnt(&alpha, alpha.fnt[2].maxwidth, alpha.fnt[2].height);
+			break;
+	}
+
 	if (nFrameStep == 0) 
 	{
 			//BitmapFNT::setColor(SHADOWCOLOR);
 			setColor_fnt(&alpha, SHADOWCOLOR);
 			//BitmapFNT::setPosition((int)(0.229 * display_width) + 1, (int)(0.135 * display_height) + 1);
-			setPosition_fnt(&alpha, (int)(0.229 * display_width) + 1, (int)(0.135 * display_height) + 1);
+			setPosition_fnt(&alpha, (int)(0.225 * display_width) + 1, (int)(0.135 * display_height) + 1);
 	}
 	else
 	{
 			//BitmapFNT::setColor(WHITECOLOR);
 			setColor_fnt(&alpha, WHITECOLOR);
 			//BitmapFNT::setPosition((int)(0.229 * display_width), (int)(0.135 * display_height));
-			setPosition_fnt(&alpha, (int)(0.229 * display_width), (int)(0.135 * display_height));
+			setPosition_fnt(&alpha, (int)(0.225 * display_width), (int)(0.135 * display_height));
 	}
 
 	snprintf(txt,sizeof(txt),"ver: %s (ip: %s)", _APP_VER, ipaddress);
@@ -129,8 +139,19 @@ void c_fbaRL::MainMenu_Frame()
 	int nMenuItem = 0;
 	
 	//BitmapFNT::setDimension(22, 26);
-	SetCurrentFont_fnt(&alpha, 1);
-	setDimension_fnt(&alpha, 24, 24);
+	switch (app.state.displayMode.resolution)
+	{
+	case VIDEO_RESOLUTION_1080:
+	case VIDEO_RESOLUTION_1600x1080:
+		SetCurrentFont_fnt(&alpha, 0);
+		setDimension_fnt(&alpha, alpha.fnt[0].maxwidth, alpha.fnt[0].height);
+		break;
+	case VIDEO_RESOLUTION_720:
+		SetCurrentFont_fnt(&alpha, 1);
+		setDimension_fnt(&alpha, alpha.fnt[1].maxwidth, alpha.fnt[1].height);
+		break;
+	}
+	
 	while(nMenuItem < main_menu->nTotalItem)
 	{
 		if (nFrameStep == 0) {
@@ -172,18 +193,20 @@ void c_fbaRL::GameList_Frame()
 	yPos = 0.2010;
 	yPosDiff	= 0.025f;
 
-   /* if (app.state.displayMode.resolution == 1)
-        fontSize = 2;
-    else*/
-        
-	//BitmapFNT::setDimension(17, 22);
-	SetCurrentFont_fnt(&alpha, 2);
-	setDimension_fnt(&alpha, 16, 16);
+	switch (app.state.displayMode.resolution)
+	{
+	case VIDEO_RESOLUTION_1080:
+	case VIDEO_RESOLUTION_1600x1080:
+		SetCurrentFont_fnt(&alpha, 1);
+		setDimension_fnt(&alpha, alpha.fnt[1].maxwidth, alpha.fnt[1].height);
+		break;
+	case VIDEO_RESOLUTION_720:
+		SetCurrentFont_fnt(&alpha, 2);
+		setDimension_fnt(&alpha, alpha.fnt[2].maxwidth, alpha.fnt[2].height);
+		break;
+	}
 	
     game_ord_id = 0;
-
-	
-
 
     if(nFilteredGames >= 1)
 	{

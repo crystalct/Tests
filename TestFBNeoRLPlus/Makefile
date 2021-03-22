@@ -128,20 +128,18 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).self $(OUTPUT).fake.self $(PKGFILES)/USRDIR/RELOAD.SELF $(PKGFILES)/USRDIR/EBOOT.BIN
+	@rm -fr $(BUILD) $(OUTPUT).*elf $(OUTPUT).*pkg $(PKGFILES)/USRDIR/RELOAD.SELF $(PKGFILES)/USRDIR/EBOOT.BIN
 
 #---------------------------------------------------------------------------------
 run:
 	ps3load $(OUTPUT).self
 
 #---------------------------------------------------------------------------------
-pkg:	$(BUILD) $(OUTPUT).pkg
+pkg1:	$(BUILD) $(OUTPUT).pkg
 pkg2:	$(BUILD)
 pkg3:
 	@cp $(OUTPUT).self $(PKGFILES)/USRDIR/RELOAD.SELF
-pkg4:
-	@echo Pluto
-pkg5:	pkg
+pkg:	pkg2 pkg3 pkg1
 
 #---------------------------------------------------------------------------------
 else

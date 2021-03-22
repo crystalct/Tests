@@ -4,8 +4,9 @@
     "\\rsx_Basic_WallpaperOrig",
     "\\rsx_Basic_WallpaperOrig\\source",
     "\\TestFBNeoRLPlus",
+    "\\TestFBNeoRLPlus\\include",
     "\\TestFBNeoRLPlus\\source"
   ],
-  "SelectedNode": "\\TestFBNeoRLPlus\\source\\fba_rl_menu.cpp",
+  "SelectedNode": "\\TestFBNeoRLPlus\\Makefile",
   "PreviewInSolutionExplorer": false
 }

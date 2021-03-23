@@ -726,6 +726,7 @@ bool CapApp::onInit(int argc, char* argv[])
 	init_fnt(gGcmContext, display_width, display_height, NULL, 32, 0, &alpha);  //INIT font using dfeault font from memory: font35 46x35
 	addfnt_from_file_fnt(&alpha, "/dev_hdd0/game/FBNE00123/USRDIR/b24.fnt", 2);
 	addfnt_from_file_fnt(&alpha, "/dev_hdd0/game/FBNE00123/USRDIR/b16.fnt", 2);
+	addfnt_from_file_fnt(&alpha, "/dev_hdd0/game/FBNE00123/USRDIR/b12.fnt", 2);
 
 #ifdef FDEBUG
 	fprintf(fdebug, "FontInit OK\n");

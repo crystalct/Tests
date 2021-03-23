@@ -111,6 +111,11 @@ void c_fbaRL::MainMenu_Frame()
 			SetCurrentFont_fnt(&alpha, 2);
 			setDimension_fnt(&alpha, alpha.fnt[2].maxwidth, alpha.fnt[2].height);
 			break;
+		case VIDEO_RESOLUTION_576:
+		case VIDEO_RESOLUTION_480:
+			SetCurrentFont_fnt(&alpha, 3);
+			setDimension_fnt(&alpha, alpha.fnt[3].maxwidth, alpha.fnt[3].height);
+			break;
 	}
 
 	if (nFrameStep == 0) 
@@ -149,6 +154,11 @@ void c_fbaRL::MainMenu_Frame()
 	case VIDEO_RESOLUTION_720:
 		SetCurrentFont_fnt(&alpha, 1);
 		setDimension_fnt(&alpha, alpha.fnt[1].maxwidth, alpha.fnt[1].height);
+		break;
+	case VIDEO_RESOLUTION_576:
+	case VIDEO_RESOLUTION_480:
+		SetCurrentFont_fnt(&alpha, 2);
+		setDimension_fnt(&alpha, alpha.fnt[2].maxwidth, alpha.fnt[2].height);
 		break;
 	}
 	
@@ -203,6 +213,11 @@ void c_fbaRL::GameList_Frame()
 	case VIDEO_RESOLUTION_720:
 		SetCurrentFont_fnt(&alpha, 2);
 		setDimension_fnt(&alpha, alpha.fnt[2].maxwidth, alpha.fnt[2].height);
+		break;
+	case VIDEO_RESOLUTION_576:
+	case VIDEO_RESOLUTION_480:
+		SetCurrentFont_fnt(&alpha, 3);
+		setDimension_fnt(&alpha, alpha.fnt[3].maxwidth, alpha.fnt[3].height);
 		break;
 	}
 	

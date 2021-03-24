@@ -266,7 +266,7 @@ void initScreen(u32 hostBufferSize)
 
     state_buffer = (void*)((intptr_t)hostAddr + DEFAULT_CB_SIZE);
     rsxAddressToOffset(state_buffer, &state_offset);
-    printf("state_cmd: %p [%08x]\n", state_buffer, state_offset);
+    //printf("state_cmd: %p [%08x]\n", state_buffer, state_offset);
 
     initDefaultStateCommands();
     initVideoConfiguration();
@@ -289,7 +289,7 @@ void initScreen(u32 hostBufferSize)
        gcmSetDisplayBuffer(i, color_offset[i], color_pitch, display_width, display_height);
        gcmSetTileInfo(tileIndex, GCM_LOCATION_RSX, color_offset[i], bufferSize, color_pitch, GCM_COMPMODE_DISABLED, 0, 0);
        gcmBindTile(tileIndex);
-       printf("fb[%d]: %p (%08x) [%dx%d] %d\n", i, color_buffer[i], color_offset[i], display_width, display_height, color_pitch);
+       //printf("fb[%d]: %p (%08x) [%dx%d] %d\n", i, color_buffer[i], color_offset[i], display_width, display_height, color_pitch);
     }
 
     bufferSize = rsxAlign(GCM_TILE_ALIGN_OFFSET, depthBufferSize);

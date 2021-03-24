@@ -20,7 +20,6 @@
 #include <bdffnt.h>
 
 #include "capp.h"
-#include "acid.h"
 #include "mesh.h"
 #include "rsxutil.h"
 #include "sqlite.h"
@@ -108,9 +107,6 @@ void SND_End_cpp();
 	}
 }
 
-static void getmem(smeminfo* m) {
-	lv2syscall1(352, (uint64_t) m);
-}
 
 static void dialog_handler(msgButton button, void* usrData) {
 	switch (button) {
@@ -524,8 +520,9 @@ void CapApp::initGraphics()
 	fprintf(fdebug, "initScreen OK\n");
 	fflush(fdebug);
 #endif
+	
 	videoGetState(VIDEO_PRIMARY, 0, &state);
-	printf("DisplayMode: %d\n", state.displayMode.resolution);
+	
 	png = new pngData;
 	pngLoadFromFile("/dev_hdd0/game/FBNE00123/USRDIR/LOADING1.PNG", png);
 #ifdef FDEBUG
@@ -647,7 +644,28 @@ bool CapApp::onInit(int argc, char* argv[])
 #endif
 	initSPUSound();
 	initGraphics();
-	
+
+	//Set Retroarch layer resolution
+	if (argc <= 1)
+	{
+		switch (state.displayMode.resolution)
+		{
+		case VIDEO_RESOLUTION_1080:
+		case VIDEO_RESOLUTION_1600x1080:
+			cfgUpdateByte("retroarch.cfg", "current_resolution_id", '1');
+			break;
+		case VIDEO_RESOLUTION_720:
+			cfgUpdateByte("retroarch.cfg", "current_resolution_id", '2');
+			break;
+		case VIDEO_RESOLUTION_576:
+			cfgUpdateByte("retroarch.cfg", "current_resolution_id", '5');
+			break;
+		case VIDEO_RESOLUTION_480:
+			cfgUpdateByte("retroarch.cfg", "current_resolution_id", '4');
+			break;
+		}
+
+	}
 #ifdef FDEBUG
 	fprintf(fdebug, "initSPUSound OK\n");
 	fflush(fdebug);
@@ -702,8 +720,6 @@ bool CapApp::onInit(int argc, char* argv[])
 	fprintf(fdebug, "InitDB OK\n");
 	fflush(fdebug);
 #endif
-	getmem(&meminfo);
-	printf("MEMORY6 TOTAL: %d - AVAIL: %d\n", meminfo.total / 1024, meminfo.avail / 1024);
 	int r = ftp_init();
 #ifdef FDEBUG
 	fprintf(fdebug, "ftp_init OK\n");

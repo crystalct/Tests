@@ -35,5 +35,6 @@ int cfgWrite(const char *cfgfile, const char *option, const char *value);
 char* getStrOption(FILE* fp, const char* option);
 int getBoolOption(FILE* fp, const char* option, bool *bOption);
 int getIntOption(FILE* fp, const char* option, unsigned int *nOption);
+void cfgUpdateByte(const char* cfgfile, const char* option, char value);
 
 #endif

@@ -101,6 +101,32 @@ bool g_opt_bCustomSysFilter[MASKCUSTOM+1] =
 
 bool g_opt_bUseUNIBIOS = false;
 
+void cfgUpdateByte(const char* cfgfile, const char* option, char value) {
+	char pathfilein[128];
+	strcpy(pathfilein, FBNEO_PATH);
+	strcat(pathfilein, cfgfile);
+	FILE* fin = NULL;
+	fin = fopen(pathfilein, "r+");
+	if (fin == 0) {
+		printf("Errore nel read\n");
+		return;
+	}
+
+	int maximumLineLength = 256;
+	char* lineBuffer = (char*)malloc(sizeof(char) * maximumLineLength);
+	
+	while (fgets(lineBuffer, maximumLineLength, fin)) {
+		if (strstr(lineBuffer, option) != NULL) {
+			fseek(fin, -3, SEEK_CUR);
+			fwrite(&value, 1, 1, fin);
+			break;
+		}
+	}
+	if (lineBuffer)
+		SAFE_FREE(lineBuffer);
+	fclose(fin);
+}
+
 int cfgWrite(const char *cfgfile, const char *option, const char *value) {
     char pathfilein[128];
     char pathfileout[128];
@@ -123,7 +149,7 @@ int cfgWrite(const char *cfgfile, const char *option, const char *value) {
         }
     int maximumLineLength = 256;
     char *lineBuffer = (char *)malloc(sizeof(char) * maximumLineLength);
-    char * line = NULL;
+    //char * line = NULL;
 
     while(fgets(lineBuffer, maximumLineLength, fin)) {
         if (strstr(lineBuffer, option) != NULL) {
@@ -139,8 +165,8 @@ int cfgWrite(const char *cfgfile, const char *option, const char *value) {
     }
     fclose(fin);
     fclose(fout);
-    if (line)
-        free(line);
+    if (lineBuffer)
+        SAFE_FREE(lineBuffer);
 
     if (sysLv2FsUnlink(pathfilein))
         return 0;

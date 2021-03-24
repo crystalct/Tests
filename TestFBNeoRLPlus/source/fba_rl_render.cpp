@@ -96,8 +96,7 @@ c_tex::c_tex(uint32_t _nTexture, uint32_t display)
     png = new pngData;
     u32* texture;
     nTexture = _nTexture;
-    uint32_t i = display * 7 + nTexture;
-    printf("Bind texture: %d - i: %d\n", nTexture, i);
+    //uint32_t i = display * 7 + nTexture;
     bTextureOK = false;
     u32 w, h, x, y;
 

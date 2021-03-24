@@ -442,7 +442,7 @@ int getRominfo(FILE* fp, char* szRomset, FBA_ROMINFO *rinfo)
 
 void c_fbaRL::InitRomInfoMenu()
 {
-	int nCols;
+	int nCols=0;
 	char *line = NULL;
     char *posB, *posE1, *posE2;
     char buff[258];
@@ -450,11 +450,16 @@ void c_fbaRL::InitRomInfoMenu()
     char *in, *out;
 	
 	switch (app.state.displayMode.resolution) {
-		case 2:
-				nCols = 84;
+		case VIDEO_RESOLUTION_720:
+				nCols = 83;
 				break;
-		case 1:
-				nCols = 95;
+		case VIDEO_RESOLUTION_1080:
+		case VIDEO_RESOLUTION_1600x1080:
+				nCols = 83;
+				break;
+		case VIDEO_RESOLUTION_576:
+		case VIDEO_RESOLUTION_480:
+				nCols = 57;
 				break;
 	}
 

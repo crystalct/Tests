@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sfo>
 	<value name="APP_VER" type="string">
-		01.00
+		02.20
 	</value>
 	<value name="ATTRIBUTE" type="integer">
 		133
@@ -28,12 +28,12 @@
 		279
 	</value>
 	<value name="TITLE" type="string">
-		RSX Test BDF FNT
+		FB NEO RL Plus
 	</value>
 	<value name="TITLE_ID" type="string">
-		PS3BDFFNT
+		FBNE00123
 	</value>
 	<value name="VERSION" type="string">
-		01.00
+		02.20
 	</value>
 </sfo>

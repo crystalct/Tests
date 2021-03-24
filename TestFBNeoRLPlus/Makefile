@@ -7,7 +7,7 @@ ifeq ($(strip $(PSL1GHT)),)
 $(error "Please set PSL1GHT in your environment. export PSL1GHT=<path>")
 endif
 
-ICON0		:=	$(CURDIR)/pkg/ICON0.PNG
+ICON0		:=	$(CURDIR)/../pkg/ICON0.PNG
 SFOXML		:=	$(CURDIR)/sfo.xml
 
 SCETOOL_FLAGS	?=	--self-app-version=0001000000000000  --sce-type=SELF --compress-data=TRUE --self-add-shdrs=TRUE --skip-sections=FALSE --key-revision=1 \
@@ -25,21 +25,23 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/ftp source/bitmapfnt_renderer
-DATA		:=	data data/bitmapfnt_renderer
-SHADERS		:=	shaders shaders/bitmapfnt_renderer
-INCLUDES	:=	include include/bitmapfnt_renderer
-PKGFILES	:=	$(CURDIR)/pkg
+SOURCES		:=	source source/ftp
+DATA		:=	data
+SHADERS		:=	shaders
+INCLUDES	:=	include
+PKGFILES	:=	$(CURDIR)/../pkg
 
-TITLE		:=	FBNEORL Test
-APPID		:=	FBNEORLT1
+TITLE		:=	FB NEO RL Plus
+APPID		:=	FBNE00123
 CONTENTID	:=	UP0001-$(APPID)_00-0000000000000000
+APP_VER		:=	2.20
+TO_DAY		:=	$(shell date +%F)
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		=	-Wall -mcpu=cell $(MACHDEP) $(INCLUDE) -O2
+CFLAGS		=	-Wall -mcpu=cell $(MACHDEP) $(INCLUDE) -O2 -D_APP_VER=$(APP_VER)
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -139,7 +141,9 @@ pkg1:	$(BUILD) $(OUTPUT).pkg
 pkg2:	$(BUILD)
 pkg3:
 	@cp $(OUTPUT).self $(PKGFILES)/USRDIR/RELOAD.SELF
-pkg:	pkg2 pkg3 pkg1
+pkg4:
+	@mv $(OUTPUT).pkg $(OUTPUT)_v$(APP_VER)_$(TO_DAY).pkg
+pkg:	pkg2 pkg3 pkg1 pkg4
 
 #---------------------------------------------------------------------------------
 else
